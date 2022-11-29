@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/lucas-clemente/quic-go"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // QUICListener is a mockable netxlite.QUICListener.

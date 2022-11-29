@@ -7,7 +7,7 @@ package netxlite
 import (
 	"context"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // WrapDNSTransport wraps a DNSTransport to provide error wrapping. This function will

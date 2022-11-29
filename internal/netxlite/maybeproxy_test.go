@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
 )
 
 func TestMaybeProxyDialer(t *testing.T) {

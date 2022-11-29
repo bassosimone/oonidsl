@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
 )
 
 func TestDNSOverTCPTransport(t *testing.T) {

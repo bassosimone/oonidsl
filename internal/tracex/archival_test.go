@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/websocket"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 func TestDNSQueryType(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // DNSDecoderMiekg uses github.com/miekg/dns to implement the Decoder.

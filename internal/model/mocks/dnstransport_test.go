@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/atomicx"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 func TestDNSTransport(t *testing.T) {

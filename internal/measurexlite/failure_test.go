@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 func TestNewFailure(t *testing.T) {

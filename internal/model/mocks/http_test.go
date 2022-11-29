@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 )
 
 func TestHTTPTransport(t *testing.T) {

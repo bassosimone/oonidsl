@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // FailureStr is the string representation of an error. The empty

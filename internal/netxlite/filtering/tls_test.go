@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 func TestTLSServer(t *testing.T) {

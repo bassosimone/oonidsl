@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 func TestDialerConnectObserver(t *testing.T) {

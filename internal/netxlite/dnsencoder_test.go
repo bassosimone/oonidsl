@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/randx"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/randx"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 func TestDNSEncoderMiekg(t *testing.T) {

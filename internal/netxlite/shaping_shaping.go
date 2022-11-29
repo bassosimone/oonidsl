@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 func newMaybeShapingDialer(dialer model.Dialer) model.Dialer {

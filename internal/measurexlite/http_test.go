@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/netxlite/filtering"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/netxlite/filtering"
 )
 
 func TestNewArchivalHTTPRequestResult(t *testing.T) {

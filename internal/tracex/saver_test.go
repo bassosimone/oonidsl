@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
 )
 
 func TestSaver(t *testing.T) {

@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 func dnsDecoderErrorIsWrapped(err error) bool {

@@ -11,7 +11,7 @@ import (
 
 	"github.com/google/martian/v3/mitm"
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // HTTPAction is an HTTP filtering action that this server should take.

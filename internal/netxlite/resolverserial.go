@@ -10,8 +10,8 @@ import (
 	"net"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/atomicx"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // SerialResolver uses a transport and performs a LookupHost

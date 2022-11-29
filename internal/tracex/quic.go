@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/lucas-clemente/quic-go"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // QUICDialerSaver saves events occurring during the QUIC handshake.

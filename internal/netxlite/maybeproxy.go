@@ -10,7 +10,7 @@ import (
 	"net"
 	"net/url"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 	"golang.org/x/net/proxy"
 )
 

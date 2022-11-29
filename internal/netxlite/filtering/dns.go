@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // DNSAction is a DNS filtering action that a DNSServer should take.

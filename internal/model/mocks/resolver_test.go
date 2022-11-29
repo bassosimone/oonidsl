@@ -6,7 +6,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 func TestResolver(t *testing.T) {

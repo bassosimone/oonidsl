@@ -7,8 +7,8 @@ package measurexlite
 import (
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 	utls "gitlab.com/yawning/utls.git"
 )
 

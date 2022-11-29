@@ -4,7 +4,7 @@ package mocks
 // Mocks for model.DNSQuery.
 //
 
-import "github.com/ooni/probe-cli/v3/internal/model"
+import "github.com/bassosimone/oonidsl/internal/model"
 
 // DNSQuery allocks mocking model.DNSQuery.
 type DNSQuery struct {

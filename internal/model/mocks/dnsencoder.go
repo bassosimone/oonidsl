@@ -4,7 +4,7 @@ package mocks
 // Mocks for model.DNSEncoder.
 //
 
-import "github.com/ooni/probe-cli/v3/internal/model"
+import "github.com/bassosimone/oonidsl/internal/model"
 
 // DNSEncoder allows mocking model.DNSEncoder.
 type DNSEncoder struct {

@@ -7,7 +7,7 @@ package mocks
 import (
 	"net"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // DNSResponse allows mocking model.DNSResponse.

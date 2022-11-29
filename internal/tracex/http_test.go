@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/netxlite/filtering"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/netxlite/filtering"
 )
 
 func TestMaybeWrapHTTPTransport(t *testing.T) {

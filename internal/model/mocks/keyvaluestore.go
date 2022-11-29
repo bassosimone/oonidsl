@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/ooni/probe-cli/v3/internal/model"
+import "github.com/bassosimone/oonidsl/internal/model"
 
 // KeyValueStore allows mocking model.KeyValueStore.
 type KeyValueStore struct {

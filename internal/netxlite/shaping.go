@@ -1,6 +1,6 @@
 package netxlite
 
-import "github.com/ooni/probe-cli/v3/internal/model"
+import "github.com/bassosimone/oonidsl/internal/model"
 
 // NewMaybeShapingDialer takes in input a model.Dialer and returns in output another
 // model.Dialer that MAY dial connections with I/O shaping, depending on whether

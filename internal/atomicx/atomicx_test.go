@@ -4,7 +4,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 )
 
 func TestInt64(t *testing.T) {

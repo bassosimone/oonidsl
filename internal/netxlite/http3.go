@@ -10,7 +10,7 @@ import (
 	"net/http"
 
 	"github.com/lucas-clemente/quic-go/http3"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // http3RoundTripper is the abstract type of quic-go/http3.RoundTripper.

@@ -9,8 +9,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/tracex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/tracex"
 )
 
 // NewArchivalHTTPRequestResult creates a new model.ArchivalHTTPRequestResult.

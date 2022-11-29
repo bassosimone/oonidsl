@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/atomicx"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // DNSEncoderMiekg uses github.com/miekg/dns to implement the Encoder.

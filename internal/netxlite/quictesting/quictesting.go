@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // Domain is the the domain we should be testing using QUIC.

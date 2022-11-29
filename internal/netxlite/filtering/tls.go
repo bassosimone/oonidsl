@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/google/martian/v3/mitm"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // TLSAction is a TLS filtering action that this proxy should take.

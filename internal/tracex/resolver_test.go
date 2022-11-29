@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 func TestWrapResolver(t *testing.T) {

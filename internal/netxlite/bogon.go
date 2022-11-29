@@ -11,8 +11,8 @@ import (
 	"context"
 	"net"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // MaybeWrapWithBogonResolver wraps the given resolver with a BogonResolver

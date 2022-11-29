@@ -3,7 +3,7 @@ package mocks
 import (
 	"database/sql"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // Database allows mocking a database

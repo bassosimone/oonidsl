@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
-	"github.com/ooni/probe-cli/v3/internal/randx"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
+	"github.com/bassosimone/oonidsl/internal/randx"
 )
 
 func TestDNSServer(t *testing.T) {

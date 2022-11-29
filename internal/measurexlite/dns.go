@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/geoipx"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/tracex"
+	"github.com/bassosimone/oonidsl/internal/geoipx"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/tracex"
 )
 
 // wrapResolver resolver wraps the passed resolver to save data into the trace

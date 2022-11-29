@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/ooni/probe-cli/v3/internal/model"
+import "github.com/bassosimone/oonidsl/internal/model"
 
 // ExperimentBuilder mocks model.ExperimentBuilder.
 type ExperimentBuilder struct {

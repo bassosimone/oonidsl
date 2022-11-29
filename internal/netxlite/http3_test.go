@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/lucas-clemente/quic-go/http3"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/model/mocks"
-	nlmocks "github.com/ooni/probe-cli/v3/internal/netxlite/mocks"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model/mocks"
+	nlmocks "github.com/bassosimone/oonidsl/internal/netxlite/mocks"
 )
 
 func TestHTTP3Transport(t *testing.T) {

@@ -15,8 +15,8 @@ import (
 
 	ootls "github.com/ooni/oocrypto/tls"
 	oohttp "github.com/ooni/oohttp"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 var (

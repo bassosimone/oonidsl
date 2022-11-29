@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 func TestExperimentInputLoader(t *testing.T) {

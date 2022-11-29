@@ -3,8 +3,8 @@ package measurexlite
 import (
 	"errors"
 
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // NewFailure creates an OONI failure from an error. If the error is nil,

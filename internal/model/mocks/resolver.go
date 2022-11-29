@@ -4,7 +4,7 @@ import (
 	"context"
 	"net"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // Resolver is a mockable Resolver.

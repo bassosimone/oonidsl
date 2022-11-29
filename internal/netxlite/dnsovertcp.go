@@ -12,7 +12,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // DialContextFunc is the type of net.Dialer.DialContext.

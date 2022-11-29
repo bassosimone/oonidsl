@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // DialerSaver saves events occurring during the dial

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 func TestPanicOnError(t *testing.T) {

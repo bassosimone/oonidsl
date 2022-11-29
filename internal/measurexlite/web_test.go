@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/ooni/probe-cli/v3/internal/randx"
+	"github.com/bassosimone/oonidsl/internal/randx"
 )
 
 func TestWebGetTitle(t *testing.T) {

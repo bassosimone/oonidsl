@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/ooni/probe-cli/v3/internal/model"
+import "github.com/bassosimone/oonidsl/internal/model"
 
 // Saver saves a measurement on some persistent storage.
 type Saver struct {

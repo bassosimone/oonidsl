@@ -12,7 +12,7 @@ import (
 	"net"
 	"reflect"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 	utls "gitlab.com/yawning/utls.git"
 )
 

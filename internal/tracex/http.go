@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // MaybeWrapHTTPTransport wraps the HTTPTransport to save events if this Saver

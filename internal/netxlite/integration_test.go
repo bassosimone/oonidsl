@@ -13,12 +13,12 @@ import (
 
 	"github.com/apex/log"
 	"github.com/lucas-clemente/quic-go"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/netxlite/filtering"
-	"github.com/ooni/probe-cli/v3/internal/netxlite/quictesting"
-	"github.com/ooni/probe-cli/v3/internal/randx"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/netxlite/filtering"
+	"github.com/bassosimone/oonidsl/internal/netxlite/quictesting"
+	"github.com/bassosimone/oonidsl/internal/randx"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 	utls "gitlab.com/yawning/utls.git"
 )
 

@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
 // dnsOverGetaddrinfoTransport is a DNSTransport using getaddrinfo.

@@ -3,7 +3,7 @@ package atomicx_test
 import (
 	"fmt"
 
-	"github.com/ooni/probe-cli/v3/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 )
 
 func Example_typicalUsage() {

@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // TProxy refers to the UnderlyingNetwork implementation. By overriding this

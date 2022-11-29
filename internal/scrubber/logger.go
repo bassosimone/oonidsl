@@ -3,7 +3,7 @@ package scrubber
 import (
 	"fmt"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // Logger is a Logger with scrubbing. All messages are scrubbed

@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // DNSOverHTTPSTransport is a DNS-over-HTTPS DNSTransport.

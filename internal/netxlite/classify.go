@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/lucas-clemente/quic-go"
-	"github.com/ooni/probe-cli/v3/internal/scrubber"
+	"github.com/bassosimone/oonidsl/internal/scrubber"
 )
 
 // ClassifyGenericError maps an error occurred during an operation to

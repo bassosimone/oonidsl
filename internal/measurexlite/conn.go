@@ -8,9 +8,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/tracex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/tracex"
 )
 
 // MaybeClose is a convenience function for closing a conn only when such a conn isn't nil.

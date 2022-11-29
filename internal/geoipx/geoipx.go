@@ -5,8 +5,8 @@ import (
 	"net"
 
 	"github.com/ooni/probe-assets/assets"
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/runtimex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/runtimex"
 	"github.com/oschwald/geoip2-golang"
 )
 

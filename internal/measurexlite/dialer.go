@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
-	"github.com/ooni/probe-cli/v3/internal/netxlite"
-	"github.com/ooni/probe-cli/v3/internal/tracex"
+	"github.com/bassosimone/oonidsl/internal/model"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/bassosimone/oonidsl/internal/tracex"
 )
 
 // NewDialerWithoutResolver is equivalent to netxlite.NewDialerWithoutResolver

@@ -13,7 +13,7 @@ import (
 	"sync"
 
 	"github.com/lucas-clemente/quic-go"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // NewQUICListener creates a new QUICListener using the standard

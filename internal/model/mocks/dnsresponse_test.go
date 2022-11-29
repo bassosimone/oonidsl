@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/miekg/dns"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 func TestDNSResponse(t *testing.T) {

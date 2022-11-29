@@ -13,7 +13,7 @@ import (
 	"time"
 
 	oohttp "github.com/ooni/oohttp"
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 // httpTransportErrWrapper is an HTTPTransport with error wrapping.

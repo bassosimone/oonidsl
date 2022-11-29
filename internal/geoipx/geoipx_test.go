@@ -3,7 +3,7 @@ package geoipx
 import (
 	"testing"
 
-	"github.com/ooni/probe-cli/v3/internal/model"
+	"github.com/bassosimone/oonidsl/internal/model"
 )
 
 const ipAddr = "8.8.8.8"
