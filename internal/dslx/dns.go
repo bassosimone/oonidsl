@@ -93,17 +93,12 @@ type DNSLookupInputState struct {
 // inherited from the DNSLookupInputState. If you want to initialize this
 // struct manually, make sure you follow specific instructions for each field.
 type DNSLookupResultState struct {
-	// Addresses contains the resolved addresses. This slice will be
-	// nil when the DNS lookup has failed.
+	// Addresses contains the nonempty resolved addresses.
 	Addresses []string
 
 	// Domain is the domain we resolved. We inherit this field
 	// from the value inside the DNSLookupInputState.
 	Domain string
-
-	// Err is the error that occurred. This field will be
-	// nil when the DNS lookup has succeeded.
-	Err error
 
 	// IDGenerator is the ID generator. We inherit this field
 	// from the value inside the DNSLookupInputState.
@@ -132,7 +127,7 @@ func (s *DNSLookupResultState) Observations() []*Observations {
 
 // DNSLookupGetaddrinfo returns a function that resolves a domain name to
 // IP addresses using libc's getaddrinfo function.
-func DNSLookupGetaddrinfo() Function[*DNSLookupInputState, *DNSLookupResultState] {
+func DNSLookupGetaddrinfo() Function[*DNSLookupInputState, *ErrorOr[*DNSLookupResultState]] {
 	return &dnsLookupGetaddrinfoFunction{}
 }
 
@@ -141,7 +136,7 @@ type dnsLookupGetaddrinfoFunction struct{}
 
 // Apply implements Function.
 func (f *dnsLookupGetaddrinfoFunction) Apply(
-	ctx context.Context, input *DNSLookupInputState) *DNSLookupResultState {
+	ctx context.Context, input *DNSLookupInputState) *ErrorOr[*DNSLookupResultState] {
 
 	// create trace
 	trace := measurexlite.NewTrace(input.IDGenerator.Add(1), input.ZeroTime)
@@ -166,20 +161,20 @@ func (f *dnsLookupGetaddrinfoFunction) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	return &DNSLookupResultState{
+	result := &DNSLookupResultState{
 		Addresses:   addrs,
 		Domain:      input.Domain,
-		Err:         err,
 		IDGenerator: input.IDGenerator,
 		Logger:      input.Logger,
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
+	return NewErrorOr(result, err)
 }
 
 // DNSLookupUDP returns a function that resolves a domain name to
 // IP addresses using the given DNS-over-UDP resolver.
-func DNSLookupUDP(resolver string) Function[*DNSLookupInputState, *DNSLookupResultState] {
+func DNSLookupUDP(resolver string) Function[*DNSLookupInputState, *ErrorOr[*DNSLookupResultState]] {
 	return &dnsLookupUDPFunction{
 		Resolver: resolver,
 	}
@@ -194,7 +189,7 @@ type dnsLookupUDPFunction struct {
 
 // Apply implements Function.
 func (f *dnsLookupUDPFunction) Apply(
-	ctx context.Context, input *DNSLookupInputState) *DNSLookupResultState {
+	ctx context.Context, input *DNSLookupInputState) *ErrorOr[*DNSLookupResultState] {
 
 	// create trace
 	trace := measurexlite.NewTrace(input.IDGenerator.Add(1), input.ZeroTime)
@@ -224,13 +219,13 @@ func (f *dnsLookupUDPFunction) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	return &DNSLookupResultState{
+	result := &DNSLookupResultState{
 		Addresses:   addrs,
 		Domain:      input.Domain,
-		Err:         err,
 		IDGenerator: input.IDGenerator,
 		Logger:      input.Logger,
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
+	return NewErrorOr(result, err)
 }

@@ -289,3 +289,39 @@ func Zip[T any](sources ...*Streamable[T]) *Streamable[T] {
 func ZipAndCollect[T any](sources ...*Streamable[T]) []T {
 	return Zip(sources...).Collect()
 }
+
+// ErrorOr[T] contains either an error or an instance of T.
+type ErrorOr[T any] struct {
+	// err is the error
+	err error
+
+	// v is the instance of T
+	v T
+}
+
+// NewErrorOr constructs a new ErrorOr instance.
+func NewErrorOr[T any](v T, err error) *ErrorOr[T] {
+	if err != nil {
+		return &ErrorOr[T]{
+			err: err,
+			v:   *new(T), // zero value
+		}
+	}
+	return &ErrorOr[T]{
+		err: nil,
+		v:   v,
+	}
+}
+
+// Error returns the error or nil
+func (eo *ErrorOr[T]) Error() error {
+	return eo.err
+}
+
+// Unwrap returns the value or calls panic with the underlying error.
+func (eo *ErrorOr[T]) Unwrap() T {
+	if eo.err != nil {
+		panic(eo.err)
+	}
+	return eo.v
+}

@@ -30,9 +30,6 @@ type HTTPTransportState struct {
 	// Domain is the OPTIONAL domain from which the address was resolved.
 	Domain string
 
-	// Err is the error that occurred or nil.
-	Err error
-
 	// IDGenerator is the MANDATORY ID generator.
 	IDGenerator *atomicx.Int64
 
@@ -124,7 +121,8 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 }
 
 // HTTPRequest issues an HTTP request using a transport and returns a response.
-func HTTPRequest(options ...HTTPRequestOption) Function[*HTTPTransportState, *HTTPRequestResultState] {
+func HTTPRequest(options ...HTTPRequestOption) Function[
+	*ErrorOr[*HTTPTransportState], *ErrorOr[*HTTPRequestResultState]] {
 	f := &httpRequestFunction{}
 	for _, option := range options {
 		option(f)
@@ -157,28 +155,14 @@ type httpRequestFunction struct {
 }
 
 // Apply implements Function.
-func (f *httpRequestFunction) Apply(
-	ctx context.Context, input *HTTPTransportState) *HTTPRequestResultState {
+func (f *httpRequestFunction) Apply(ctx context.Context,
+	maybeInput *ErrorOr[*HTTPTransportState]) *ErrorOr[*HTTPRequestResultState] {
 
 	// if the previous stage failed, forward the error
-	if input.Err != nil {
-		return &HTTPRequestResultState{
-			Address:                  input.Address,
-			Domain:                   input.Domain,
-			Err:                      input.Err,
-			HTTPObservationsOnce:     sync.Once{},
-			HTTPObservations:         nil,
-			HTTPRequest:              nil,
-			HTTPResponse:             nil,
-			HTTPResponseBodySnapshot: nil,
-			IDGenerator:              input.IDGenerator,
-			Logger:                   input.Logger,
-			Network:                  input.Network,
-			Trace:                    input.Trace,
-			UnderlyingCloser:         nil,
-			ZeroTime:                 input.ZeroTime,
-		}
+	if maybeInput.err != nil {
+		return NewErrorOr[*HTTPRequestResultState](nil, maybeInput.err)
 	}
+	input := maybeInput.Unwrap()
 
 	// create HTTP request
 	const timeout = 10 * time.Second
@@ -211,10 +195,9 @@ func (f *httpRequestFunction) Apply(
 		ol.Stop(err)
 	}
 
-	return &HTTPRequestResultState{
+	result := &HTTPRequestResultState{
 		Address:                  input.Address,
 		Domain:                   input.Domain,
-		Err:                      err, // possibly nil
 		HTTPObservationsOnce:     sync.Once{},
 		HTTPObservations:         observations, // possibly nil
 		HTTPRequest:              req,          // possibly nil
@@ -227,6 +210,8 @@ func (f *httpRequestFunction) Apply(
 		UnderlyingCloser:         input.UnderlyingCloser,
 		ZeroTime:                 input.ZeroTime,
 	}
+
+	return NewErrorOr(result, err)
 }
 
 func (f *httpRequestFunction) newHTTPRequest(
@@ -363,9 +348,6 @@ type HTTPRequestResultState struct {
 
 	// Domain is the OPTIONAL domain from which we determined Address.
 	Domain string
-
-	// Err is the error that occurred or nil.
-	Err error
 
 	// HTTPObservationsOnce ensures we drain HTTPObservations just once.
 	HTTPObservationsOnce sync.Once

@@ -41,8 +41,8 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(
-	options ...TLSHandshakeOption) Function[*TCPConnectResultState, *TLSHandshakeResultState] {
+func TLSHandshake(options ...TLSHandshakeOption) Function[
+	*ErrorOr[*TCPConnectResultState], *ErrorOr[*TLSHandshakeResultState]] {
 	f := &tlsHandshakeFunction{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
@@ -67,24 +67,14 @@ type tlsHandshakeFunction struct {
 }
 
 // Apply implements Function.
-func (f *tlsHandshakeFunction) Apply(
-	ctx context.Context, input *TCPConnectResultState) *TLSHandshakeResultState {
+func (f *tlsHandshakeFunction) Apply(ctx context.Context,
+	maybeInput *ErrorOr[*TCPConnectResultState]) *ErrorOr[*TLSHandshakeResultState] {
 
 	// if the previous stage failed, forward the error
-	if input.Err != nil {
-		return &TLSHandshakeResultState{
-			Address:     input.Address,
-			Conn:        nil,
-			Domain:      input.Domain,
-			Err:         input.Err,
-			IDGenerator: input.IDGenerator,
-			Logger:      input.Logger,
-			Network:     input.Network,
-			TLSState:    tls.ConnectionState{},
-			Trace:       input.Trace,
-			ZeroTime:    input.ZeroTime,
-		}
+	if maybeInput.err != nil {
+		return NewErrorOr[*TLSHandshakeResultState](nil, maybeInput.err)
 	}
+	input := maybeInput.Unwrap()
 
 	// keep using the same trace
 	trace := input.Trace
@@ -126,7 +116,6 @@ func (f *tlsHandshakeFunction) Apply(
 		Address:     input.Address,
 		Conn:        nil, // set later
 		Domain:      input.Domain,
-		Err:         err,
 		IDGenerator: input.IDGenerator,
 		Logger:      input.Logger,
 		Network:     input.Network,
@@ -142,7 +131,7 @@ func (f *tlsHandshakeFunction) Apply(
 		result.Conn = conn.(netxlite.TLSConn) // guaranteed to work
 	}
 
-	return result
+	return NewErrorOr(result, err)
 }
 
 func (f *tlsHandshakeFunction) serverName(input *TCPConnectResultState) string {
@@ -165,14 +154,11 @@ type TLSHandshakeResultState struct {
 	// Address is the MANDATORY address we tried to connect to.
 	Address string
 
-	// Conn is the possibly-nil TCP connection.
+	// Conn is the established TLS conn.
 	Conn netxlite.TLSConn
 
 	// Domain is the OPTIONAL domain we resolved.
 	Domain string
-
-	// Err is the error that occurred when connecting or nil.
-	Err error
 
 	// IDGenerator is the MANDATORY ID generator to use.
 	IDGenerator *atomicx.Int64

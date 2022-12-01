@@ -11,7 +11,7 @@ import (
 )
 
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
-func HTTPTransportTCP() Function[*TCPConnectResultState, *HTTPTransportState] {
+func HTTPTransportTCP() Function[*ErrorOr[*TCPConnectResultState], *ErrorOr[*HTTPTransportState]] {
 	return &httpTransportTCPFunction{}
 }
 
@@ -19,26 +19,14 @@ func HTTPTransportTCP() Function[*TCPConnectResultState, *HTTPTransportState] {
 type httpTransportTCPFunction struct{}
 
 // Apply implements Function
-func (f *httpTransportTCPFunction) Apply(
-	ctx context.Context, input *TCPConnectResultState) *HTTPTransportState {
+func (f *httpTransportTCPFunction) Apply(ctx context.Context,
+	maybeInput *ErrorOr[*TCPConnectResultState]) *ErrorOr[*HTTPTransportState] {
 
 	// if the previous stage failed, forward the error
-	if input.Err != nil {
-		return &HTTPTransportState{
-			Address:               input.Address,
-			Domain:                input.Domain,
-			Err:                   input.Err,
-			IDGenerator:           input.IDGenerator,
-			Logger:                input.Logger,
-			Network:               input.Network,
-			Scheme:                "",
-			TLSNegotiatedProtocol: "",
-			Trace:                 input.Trace,
-			Transport:             nil,
-			UnderlyingCloser:      nil,
-			ZeroTime:              input.ZeroTime,
-		}
+	if maybeInput.err != nil {
+		return NewErrorOr[*HTTPTransportState](nil, maybeInput.err)
 	}
+	input := maybeInput.Unwrap()
 
 	// create transport
 	httpTransport := netxlite.NewHTTPTransport(
@@ -47,10 +35,9 @@ func (f *httpTransportTCPFunction) Apply(
 		netxlite.NewNullTLSDialer(),
 	)
 
-	return &HTTPTransportState{
+	result := &HTTPTransportState{
 		Address:               input.Address,
 		Domain:                input.Domain,
-		Err:                   nil,
 		IDGenerator:           input.IDGenerator,
 		Logger:                input.Logger,
 		Network:               input.Network,
@@ -61,4 +48,5 @@ func (f *httpTransportTCPFunction) Apply(
 		UnderlyingCloser:      input.Conn,
 		ZeroTime:              input.ZeroTime,
 	}
+	return NewErrorOr(result, nil)
 }
