@@ -7,6 +7,8 @@ package dslx
 import (
 	"context"
 	"sync"
+
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 )
 
 // Function is a generic function from A to B.
@@ -299,27 +301,6 @@ func (f *lambda[A, B]) Apply(ctx context.Context, a A) ErrorOr[B] {
 	return f.fun(ctx, a)
 }
 
-// Mutex[T] wraps T with a mutex.
-type Mutex[T any] struct {
-	mu sync.Mutex
-	v  T
-}
-
-// Set sets the underlying wrapped value.
-func (m *Mutex[T]) Set(v T) {
-	defer m.mu.Unlock()
-	m.mu.Lock()
-	m.v = v
-}
-
-// Get returns the underlying wrapped value.
-func (m *Mutex[T]) Get() (v T) {
-	defer m.mu.Unlock()
-	m.mu.Lock()
-	v = m.v
-	return
-}
-
 // ApplyAsync is equivalent to calling Apply but returns a Streamable.
 func ApplyAsync[A, B any](
 	ctx context.Context,
@@ -398,4 +379,36 @@ func (eo *errorOr[T]) Unwrap() T {
 		panic(eo.err)
 	}
 	return eo.v
+}
+
+// Counter generates an instance of *CounterState.
+func Counter[T any]() *CounterState[T] {
+	return &CounterState[T]{}
+}
+
+// CounterState allows to count how many times
+// a Function[T, ErrorOr[T]] is invoked.
+type CounterState[T any] struct {
+	n atomicx.Int64
+}
+
+// Value returns the counter's value.
+func (c *CounterState[T]) Value() int64 {
+	return c.n.Load()
+}
+
+// Function returns a Function[T, ErrorOr[T]] that updates the counter.
+func (c *CounterState[T]) Function() Function[T, ErrorOr[T]] {
+	return &counterFunction[T]{c}
+}
+
+// counterFunction is the Function returned by CounterFunction.Function.
+type counterFunction[T any] struct {
+	c *CounterState[T]
+}
+
+// Apply implements Function.
+func (c *counterFunction[T]) Apply(ctx context.Context, value T) ErrorOr[T] {
+	c.c.n.Add(1)
+	return NewErrorOr(value, nil)
 }
