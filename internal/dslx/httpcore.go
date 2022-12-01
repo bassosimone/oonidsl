@@ -122,7 +122,7 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 
 // HTTPRequest issues an HTTP request using a transport and returns a response.
 func HTTPRequest(options ...HTTPRequestOption) Function[
-	*HTTPTransportState, *ErrorOr[*HTTPRequestResultState]] {
+	*HTTPTransportState, ErrorOr[*HTTPRequestResultState]] {
 	f := &httpRequestFunction{}
 	for _, option := range options {
 		option(f)
@@ -156,7 +156,7 @@ type httpRequestFunction struct {
 
 // Apply implements Function.
 func (f *httpRequestFunction) Apply(
-	ctx context.Context, input *HTTPTransportState) *ErrorOr[*HTTPRequestResultState] {
+	ctx context.Context, input *HTTPTransportState) ErrorOr[*HTTPRequestResultState] {
 	// create HTTP request
 	const timeout = 10 * time.Second
 	ctx, cancel := context.WithTimeout(ctx, timeout)

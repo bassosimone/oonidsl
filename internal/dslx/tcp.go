@@ -16,7 +16,7 @@ import (
 )
 
 // TCPConnect returns a function that establishes TCP connections.
-func TCPConnect() Function[*EndpointState, *ErrorOr[*TCPConnectResultState]] {
+func TCPConnect() Function[*EndpointState, ErrorOr[*TCPConnectResultState]] {
 	f := &tcpConnectFunction{}
 	return f
 }
@@ -26,7 +26,7 @@ type tcpConnectFunction struct{}
 
 // Apply applies the function to its arguments.
 func (f *tcpConnectFunction) Apply(
-	ctx context.Context, input *EndpointState) *ErrorOr[*TCPConnectResultState] {
+	ctx context.Context, input *EndpointState) ErrorOr[*TCPConnectResultState] {
 
 	// create trace
 	trace := measurexlite.NewTrace(input.IDGenerator.Add(1), input.ZeroTime)
@@ -70,7 +70,7 @@ type TCPConnectResultState struct {
 	// Address is the MANDATORY address we tried to connect to.
 	Address string
 
-	// Conn is the established connections.
+	// Conn is the established connection.
 	Conn net.Conn
 
 	// Domain is the OPTIONAL domain from which we resolved the Address.

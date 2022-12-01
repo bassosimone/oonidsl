@@ -11,7 +11,7 @@ import (
 )
 
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
-func HTTPTransportTCP() Function[*TCPConnectResultState, *ErrorOr[*HTTPTransportState]] {
+func HTTPTransportTCP() Function[*TCPConnectResultState, ErrorOr[*HTTPTransportState]] {
 	return &httpTransportTCPFunction{}
 }
 
@@ -20,7 +20,7 @@ type httpTransportTCPFunction struct{}
 
 // Apply implements Function
 func (f *httpTransportTCPFunction) Apply(
-	ctx context.Context, input *TCPConnectResultState) *ErrorOr[*HTTPTransportState] {
+	ctx context.Context, input *TCPConnectResultState) ErrorOr[*HTTPTransportState] {
 	// create transport
 	httpTransport := netxlite.NewHTTPTransport(
 		input.Logger,

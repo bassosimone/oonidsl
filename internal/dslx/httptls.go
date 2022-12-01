@@ -11,7 +11,7 @@ import (
 )
 
 // HTTPTransportTLS converts a TLS connection into an HTTP transport.
-func HTTPTransportTLS() Function[*TLSHandshakeResultState, *ErrorOr[*HTTPTransportState]] {
+func HTTPTransportTLS() Function[*TLSHandshakeResultState, ErrorOr[*HTTPTransportState]] {
 	return &httpTransportTLSFunction{}
 }
 
@@ -20,7 +20,7 @@ type httpTransportTLSFunction struct{}
 
 // Apply implements Function.
 func (f *httpTransportTLSFunction) Apply(
-	ctx context.Context, input *TLSHandshakeResultState) *ErrorOr[*HTTPTransportState] {
+	ctx context.Context, input *TLSHandshakeResultState) ErrorOr[*HTTPTransportState] {
 	// create transport
 	httpTransport := netxlite.NewHTTPTransport(
 		input.Logger,

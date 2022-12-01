@@ -37,7 +37,7 @@ type ObservationsProducer interface {
 }
 
 // ExtractObservations extracts observations from a list of producers.
-func ExtractObservations[T ObservationsProducer](producers ...*ErrorOr[T]) (out []*Observations) {
+func ExtractObservations[T ObservationsProducer](producers ...ErrorOr[T]) (out []*Observations) {
 	for _, p := range producers {
 		if p.Error() != nil {
 			continue

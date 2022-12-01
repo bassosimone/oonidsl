@@ -12,7 +12,7 @@ import (
 )
 
 // AddressSet transforms DNS lookup results into a set of IP addresses.
-func AddressSet(dns ...*ErrorOr[*DNSLookupResultState]) *AddressSetState {
+func AddressSet(dns ...ErrorOr[*DNSLookupResultState]) *AddressSetState {
 	uniq := make(map[string]bool)
 	for _, e := range dns {
 		if e.Error() != nil {
