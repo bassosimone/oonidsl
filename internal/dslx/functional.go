@@ -412,3 +412,50 @@ func (c *counterFunction[T]) Apply(ctx context.Context, value T) ErrorOr[T] {
 	c.c.n.Add(1)
 	return NewErrorOr(value, nil)
 }
+
+// ErrorLogger logs errors emitted by Function[A, B].
+type ErrorLogger[A, B any] struct {
+	errors []error
+	mu     sync.Mutex
+}
+
+// Errors returns the a copy of the internal array of errors and clears the
+// internal array of errors as a side effect.
+func (e *ErrorLogger[A, B]) Errors() []error {
+	defer e.mu.Unlock()
+	e.mu.Lock()
+	v := []error{}
+	v = append(v, e.errors...)
+	e.errors = nil // as documented
+	return v
+}
+
+// record records that an error occurred.
+func (e *ErrorLogger[A, B]) record(err error) {
+	defer e.mu.Unlock()
+	e.mu.Lock()
+	e.errors = append(e.errors, err)
+}
+
+// Wrap wraps the given function to log errors.
+func (e *ErrorLogger[A, B]) Wrap(fx Function[A, ErrorOr[B]]) Function[A, ErrorOr[B]] {
+	return &errorLoggerWrapper[A, B]{
+		fx: fx,
+		p:  e,
+	}
+}
+
+// errorLoggerWrapper is the type returned by ErrorLogger.Wrap.
+type errorLoggerWrapper[A, B any] struct {
+	fx Function[A, ErrorOr[B]]
+	p  *ErrorLogger[A, B]
+}
+
+// Apply implements Function.
+func (elw *errorLoggerWrapper[A, B]) Apply(ctx context.Context, a A) ErrorOr[B] {
+	r := elw.fx.Apply(ctx, a)
+	if err := r.Error(); err != nil {
+		elw.p.record(err)
+	}
+	return r
+}
