@@ -7,7 +7,6 @@ package dslx
 import (
 	"context"
 	"crypto/tls"
-	"io"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
@@ -41,11 +40,12 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(options ...TLSHandshakeOption) Function[
+func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) Function[
 	*TCPConnectResultState, ErrorOr[*TLSHandshakeResultState]] {
 	f := &tlsHandshakeFunction{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
+		Pool:               pool,
 		ServerName:         "",
 	}
 	for _, option := range options {
@@ -61,6 +61,9 @@ type tlsHandshakeFunction struct {
 
 	// NextProto contains the ALPNs to negotiate.
 	NextProto []string
+
+	// Pool is the Pool that owns us.
+	Pool *ConnPool
 
 	// ServerName is the ServerName to handshake for.
 	ServerName string
@@ -101,6 +104,9 @@ func (f *tlsHandshakeFunction) Apply(
 	// handshake
 	conn, state, err := handshaker.Handshake(ctx, input.Conn, config)
 
+	// possibly register established conn for late close
+	f.Pool.maybeRegister(conn)
+
 	// stop the operation logger
 	ol.Stop(err)
 
@@ -117,10 +123,8 @@ func (f *tlsHandshakeFunction) Apply(
 		ZeroTime:    input.ZeroTime,
 	}
 
-	// deal with the connections
-	if err != nil {
-		measurexlite.MaybeClose(input.Conn) // we own it
-	} else {
+	// conditionally set the conn
+	if err == nil {
 		result.Conn = conn.(netxlite.TLSConn) // guaranteed to work
 	}
 
@@ -177,14 +181,4 @@ var _ ObservationsProducer = &TLSHandshakeResultState{}
 // Observations implements ObservationsProducer
 func (s *TLSHandshakeResultState) Observations() []*Observations {
 	return maybeTraceToObservations(s.Trace)
-}
-
-var _ io.Closer = &TLSHandshakeResultState{}
-
-// Close implements io.Closer
-func (s *TLSHandshakeResultState) Close() error {
-	if s.Conn != nil {
-		return s.Conn.Close()
-	}
-	return nil
 }

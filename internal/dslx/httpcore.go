@@ -51,21 +51,8 @@ type HTTPTransportState struct {
 	// Transport is the MANDATORY HTTP transport we're using.
 	Transport model.HTTPTransport
 
-	// UnderlyingCloser is the MANDATORY closer to close the underlying conn.
-	UnderlyingCloser net.Conn
-
 	// ZeroTime is the MANDATORY zero time of the measurement.
 	ZeroTime time.Time
-}
-
-var _ io.Closer = &HTTPTransportState{}
-
-// Close implements io.Closer
-func (s *HTTPTransportState) Close() error {
-	if s.UnderlyingCloser != nil {
-		return s.UnderlyingCloser.Close()
-	}
-	return nil
 }
 
 // HTTPRequestOption is an option you can pass to HTTPRequest.
@@ -200,7 +187,6 @@ func (f *httpRequestFunction) Apply(
 		Logger:                   input.Logger,
 		Network:                  input.Network,
 		Trace:                    input.Trace,
-		UnderlyingCloser:         input.UnderlyingCloser,
 		ZeroTime:                 input.ZeroTime,
 	}
 
@@ -371,9 +357,6 @@ type HTTPRequestResultState struct {
 	// when you call the Observations method.
 	Trace *measurexlite.Trace
 
-	// UnderlyingCloser is the MANDATORY closer to close the underlying conn.
-	UnderlyingCloser net.Conn
-
 	// ZeroTime is the MANDATORY zero time of the measurement.
 	ZeroTime time.Time
 }
@@ -391,14 +374,4 @@ func (s *HTTPRequestResultState) Observations() (out []*Observations) {
 		out = append(out, s.HTTPObservations...)
 	})
 	return
-}
-
-var _ io.Closer = &HTTPRequestResultState{}
-
-// Close implements io.Closer
-func (s *HTTPRequestResultState) Close() error {
-	if s.UnderlyingCloser != nil {
-		return s.UnderlyingCloser.Close()
-	}
-	return nil
 }

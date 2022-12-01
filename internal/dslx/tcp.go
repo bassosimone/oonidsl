@@ -6,7 +6,6 @@ package dslx
 
 import (
 	"context"
-	"io"
 	"net"
 	"time"
 
@@ -16,13 +15,15 @@ import (
 )
 
 // TCPConnect returns a function that establishes TCP connections.
-func TCPConnect() Function[*EndpointState, ErrorOr[*TCPConnectResultState]] {
-	f := &tcpConnectFunction{}
+func TCPConnect(pool *ConnPool) Function[*EndpointState, ErrorOr[*TCPConnectResultState]] {
+	f := &tcpConnectFunction{pool}
 	return f
 }
 
 // tcpConnectFunction is a function that establishes TCP connections.
-type tcpConnectFunction struct{}
+type tcpConnectFunction struct {
+	p *ConnPool
+}
 
 // Apply applies the function to its arguments.
 func (f *tcpConnectFunction) Apply(
@@ -47,6 +48,9 @@ func (f *tcpConnectFunction) Apply(
 
 	// connect
 	conn, err := dialer.DialContext(ctx, "tcp", input.Address)
+
+	// possibly register established conn for late close
+	f.p.maybeRegister(conn)
 
 	// stop the operation logger
 	ol.Stop(err)
@@ -97,14 +101,4 @@ var _ ObservationsProducer = &TCPConnectResultState{}
 // Observations implements ObservationsProducer
 func (s *TCPConnectResultState) Observations() []*Observations {
 	return maybeTraceToObservations(s.Trace)
-}
-
-var _ io.Closer = &TCPConnectResultState{}
-
-// Close implements io.Closer
-func (s *TCPConnectResultState) Close() error {
-	if s.Conn != nil {
-		return s.Conn.Close()
-	}
-	return nil
 }

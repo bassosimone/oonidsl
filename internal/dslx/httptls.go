@@ -38,7 +38,6 @@ func (f *httpTransportTLSFunction) Apply(
 		TLSNegotiatedProtocol: input.TLSState.NegotiatedProtocol,
 		Trace:                 input.Trace,
 		Transport:             httpTransport,
-		UnderlyingCloser:      input.Conn,
 		ZeroTime:              input.ZeroTime,
 	}
 	return NewErrorOr(result, nil)

@@ -50,13 +50,15 @@ func main() {
 			dslx.EndpointOptionZerotime(zeroTime),
 		)
 
+	connpool := &dslx.ConnPool{}
+	defer connpool.Close()
+
 	endpointsResults := dslx.Map(ctx, dslx.Parallelism(2),
-		dslx.Compose5(
-			dslx.TCPConnect(),
-			dslx.TLSHandshake(),
+		dslx.Compose4(
+			dslx.TCPConnect(connpool),
+			dslx.TLSHandshake(connpool),
 			dslx.HTTPTransportTLS(),
 			dslx.HTTPRequest(),
-			dslx.Close[*dslx.HTTPRequestResultState](),
 		),
 		endpoints...,
 	)
