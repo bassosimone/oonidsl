@@ -121,7 +121,8 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 }
 
 // HTTPRequest issues an HTTP request using a transport and returns a response.
-func HTTPRequest(options ...HTTPRequestOption) Function[*HTTPTransportState, *HTTPRequestResultState] {
+func HTTPRequest(options ...HTTPRequestOption) Function[
+	*HTTPTransportState, *ErrorOr[*HTTPRequestResultState]] {
 	f := &httpRequestFunction{}
 	for _, option := range options {
 		option(f)

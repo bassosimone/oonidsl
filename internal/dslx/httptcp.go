@@ -11,7 +11,7 @@ import (
 )
 
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
-func HTTPTransportTCP() Function[*TCPConnectResultState, *HTTPTransportState] {
+func HTTPTransportTCP() Function[*TCPConnectResultState, *ErrorOr[*HTTPTransportState]] {
 	return &httpTransportTCPFunction{}
 }
 

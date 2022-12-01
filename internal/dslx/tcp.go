@@ -16,7 +16,7 @@ import (
 )
 
 // TCPConnect returns a function that establishes TCP connections.
-func TCPConnect() Function[*EndpointState, *TCPConnectResultState] {
+func TCPConnect() Function[*EndpointState, *ErrorOr[*TCPConnectResultState]] {
 	f := &tcpConnectFunction{}
 	return f
 }

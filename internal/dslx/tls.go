@@ -41,8 +41,8 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(
-	options ...TLSHandshakeOption) Function[*TCPConnectResultState, *TLSHandshakeResultState] {
+func TLSHandshake(options ...TLSHandshakeOption) Function[
+	*TCPConnectResultState, *ErrorOr[*TLSHandshakeResultState]] {
 	f := &tlsHandshakeFunction{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},

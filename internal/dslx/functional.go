@@ -12,68 +12,121 @@ import (
 // Function is a generic function from A to B.
 type Function[A, B any] interface {
 	// Apply applies ctx and A to the function to produce B.
-	Apply(ctx context.Context, a A) *ErrorOr[B]
+	Apply(ctx context.Context, a A) B
 }
 
 // Compose2 composes a function from A to B with a function from B to C.
-func Compose2[A, B, C any](f Function[A, B], g Function[B, C]) Function[A, C] {
+func Compose2[A, B, C any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+) Function[A, *ErrorOr[C]] {
 	return &composer[A, B, C]{f, g}
 }
 
 // Compose3 composes three functions together.
-func Compose3[A, B, C, D any](f Function[A, B], g Function[B, C], h Function[C, D]) Function[A, D] {
+func Compose3[A, B, C, D any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+) Function[A, *ErrorOr[D]] {
 	return Compose2(Compose2(f, g), h)
 }
 
 // Compose4 composes four functions together.
 func Compose4[A, B, C, D, E any](
-	f Function[A, B], g Function[B, C], h Function[C, D], i Function[D, E]) Function[A, E] {
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+) Function[A, *ErrorOr[E]] {
 	return Compose2(Compose3(f, g, h), i)
 }
 
 // Compose5 composes five functions together.
-func Compose5[A, B, C, D, E, F any](f Function[A, B], g Function[B, C], h Function[C, D],
-	i Function[D, E], j Function[E, F]) Function[A, F] {
+func Compose5[A, B, C, D, E, F any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+	j Function[E, *ErrorOr[F]],
+) Function[A, *ErrorOr[F]] {
 	return Compose2(Compose4(f, g, h, i), j)
 }
 
 // Compose6 composes six functions together.
-func Compose6[A, B, C, D, E, F, G any](f Function[A, B], g Function[B, C], h Function[C, D],
-	i Function[D, E], j Function[E, F], k Function[F, G]) Function[A, G] {
+func Compose6[A, B, C, D, E, F, G any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+	j Function[E, *ErrorOr[F]],
+	k Function[F, *ErrorOr[G]],
+) Function[A, *ErrorOr[G]] {
 	return Compose2(Compose5(f, g, h, i, j), k)
 }
 
 // Compose7 composes seven functions together.
-func Compose7[A, B, C, D, E, F, G, H any](f Function[A, B], g Function[B, C], h Function[C, D],
-	i Function[D, E], j Function[E, F], k Function[F, G], l Function[G, H]) Function[A, H] {
+func Compose7[A, B, C, D, E, F, G, H any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+	j Function[E, *ErrorOr[F]],
+	k Function[F, *ErrorOr[G]],
+	l Function[G, *ErrorOr[H]],
+) Function[A, *ErrorOr[H]] {
 	return Compose2(Compose6(f, g, h, i, j, k), l)
 }
 
 // Compose8 composes eight functions together.
-func Compose8[A, B, C, D, E, F, G, H, I any](f Function[A, B], g Function[B, C], h Function[C, D],
-	i Function[D, E], j Function[E, F], k Function[F, G], l Function[G, H],
-	m Function[H, I]) Function[A, I] {
+func Compose8[A, B, C, D, E, F, G, H, I any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+	j Function[E, *ErrorOr[F]],
+	k Function[F, *ErrorOr[G]],
+	l Function[G, *ErrorOr[H]],
+	m Function[H, *ErrorOr[I]],
+) Function[A, *ErrorOr[I]] {
 	return Compose2(Compose7(f, g, h, i, j, k, l), m)
 }
 
 // Compose9 composes nine functions together.
-func Compose9[A, B, C, D, E, F, G, H, I, J any](f Function[A, B], g Function[B, C], h Function[C, D],
-	i Function[D, E], j Function[E, F], k Function[F, G], l Function[G, H],
-	m Function[H, I], n Function[I, J]) Function[A, J] {
+func Compose9[A, B, C, D, E, F, G, H, I, J any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+	j Function[E, *ErrorOr[F]],
+	k Function[F, *ErrorOr[G]],
+	l Function[G, *ErrorOr[H]],
+	m Function[H, *ErrorOr[I]],
+	n Function[I, *ErrorOr[J]],
+) Function[A, *ErrorOr[J]] {
 	return Compose2(Compose8(f, g, h, i, j, k, l, m), n)
 }
 
 // Compose10 composes ten functions together.
-func Compose10[A, B, C, D, E, F, G, H, I, J, K any](f Function[A, B], g Function[B, C], h Function[C, D],
-	i Function[D, E], j Function[E, F], k Function[F, G], l Function[G, H],
-	m Function[H, I], n Function[I, J], o Function[J, K]) Function[A, K] {
+func Compose10[A, B, C, D, E, F, G, H, I, J, K any](
+	f Function[A, *ErrorOr[B]],
+	g Function[B, *ErrorOr[C]],
+	h Function[C, *ErrorOr[D]],
+	i Function[D, *ErrorOr[E]],
+	j Function[E, *ErrorOr[F]],
+	k Function[F, *ErrorOr[G]],
+	l Function[G, *ErrorOr[H]],
+	m Function[H, *ErrorOr[I]],
+	n Function[I, *ErrorOr[J]],
+	o Function[J, *ErrorOr[K]],
+) Function[A, *ErrorOr[K]] {
 	return Compose2(Compose9(f, g, h, i, j, k, l, m, n), o)
 }
 
 // composer implements Compose.
 type composer[A, B, C any] struct {
-	f Function[A, B]
-	g Function[B, C]
+	f Function[A, *ErrorOr[B]]
+	g Function[B, *ErrorOr[C]]
 }
 
 // Apply implements Function[A, C].
@@ -105,7 +158,7 @@ type Parallelism int
 func Map[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
-	fx Function[A, B],
+	fx Function[A, *ErrorOr[B]],
 	as ...A,
 ) []*ErrorOr[B] {
 	return MapAsync(ctx, parallelism, fx, Stream(as...)).Collect()
@@ -115,7 +168,7 @@ func Map[A, B any](
 func MapAsync[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
-	fx Function[A, B],
+	fx Function[A, *ErrorOr[B]],
 	inputs *Streamable[A],
 ) *Streamable[*ErrorOr[B]] {
 	// create channel for returning results
@@ -163,7 +216,7 @@ func Parallel[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
 	input A,
-	fn ...Function[A, B],
+	fn ...Function[A, *ErrorOr[B]],
 ) []*ErrorOr[B] {
 	return ParallelAsync(ctx, parallelism, input, Stream(fn...)).Collect()
 }
@@ -173,7 +226,7 @@ func ParallelAsync[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
 	input A,
-	funcs *Streamable[Function[A, B]],
+	funcs *Streamable[Function[A, *ErrorOr[B]]],
 ) *Streamable[*ErrorOr[B]] {
 	// create channel for returning results
 	r := make(chan *ErrorOr[B])
@@ -229,7 +282,7 @@ func Stream[T any](ts ...T) *Streamable[T] {
 }
 
 // Lambda takes in input a lambda and constructs the equivalent Function.
-func Lambda[A, B any](fx func(context.Context, A) *ErrorOr[B]) Function[A, B] {
+func Lambda[A, B any](fx func(context.Context, A) *ErrorOr[B]) Function[A, *ErrorOr[B]] {
 	return &lambda[A, B]{fx}
 }
 
@@ -265,7 +318,11 @@ func (m *Mutex[T]) Get() (v T) {
 }
 
 // ApplyAsync is equivalent to calling Apply but returns a Streamable.
-func ApplyAsync[A, B any](ctx context.Context, fx Function[A, B], input A) *Streamable[*ErrorOr[B]] {
+func ApplyAsync[A, B any](
+	ctx context.Context,
+	fx Function[A, *ErrorOr[B]],
+	input A,
+) *Streamable[*ErrorOr[B]] {
 	return MapAsync(ctx, Parallelism(1), fx, Stream(input))
 }
 

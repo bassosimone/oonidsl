@@ -11,7 +11,7 @@ import (
 )
 
 // HTTPTransportTLS converts a TLS connection into an HTTP transport.
-func HTTPTransportTLS() Function[*TLSHandshakeResultState, *HTTPTransportState] {
+func HTTPTransportTLS() Function[*TLSHandshakeResultState, *ErrorOr[*HTTPTransportState]] {
 	return &httpTransportTLSFunction{}
 }
 
