@@ -43,7 +43,7 @@ func main() {
 		RemoveBogons().
 		ToEndpoints(
 			dslx.EndpointNetwork("tcp"),
-			443,
+			dslx.EndpointPort(443),
 			dslx.EndpointOptionDomain("www.google.com"),
 			dslx.EndpointOptionIDGenerator(idGen),
 			dslx.EndpointOptionLogger(log.Log),
