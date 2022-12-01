@@ -127,7 +127,7 @@ func (s *DNSLookupResultState) Observations() []*Observations {
 
 // DNSLookupGetaddrinfo returns a function that resolves a domain name to
 // IP addresses using libc's getaddrinfo function.
-func DNSLookupGetaddrinfo() Function[*DNSLookupInputState, *ErrorOr[*DNSLookupResultState]] {
+func DNSLookupGetaddrinfo() Function[*DNSLookupInputState, *DNSLookupResultState] {
 	return &dnsLookupGetaddrinfoFunction{}
 }
 
@@ -174,7 +174,7 @@ func (f *dnsLookupGetaddrinfoFunction) Apply(
 
 // DNSLookupUDP returns a function that resolves a domain name to
 // IP addresses using the given DNS-over-UDP resolver.
-func DNSLookupUDP(resolver string) Function[*DNSLookupInputState, *ErrorOr[*DNSLookupResultState]] {
+func DNSLookupUDP(resolver string) Function[*DNSLookupInputState, *DNSLookupResultState] {
 	return &dnsLookupUDPFunction{
 		Resolver: resolver,
 	}

@@ -41,8 +41,8 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(options ...TLSHandshakeOption) Function[
-	*ErrorOr[*TCPConnectResultState], *ErrorOr[*TLSHandshakeResultState]] {
+func TLSHandshake(
+	options ...TLSHandshakeOption) Function[*TCPConnectResultState, *TLSHandshakeResultState] {
 	f := &tlsHandshakeFunction{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
@@ -67,15 +67,8 @@ type tlsHandshakeFunction struct {
 }
 
 // Apply implements Function.
-func (f *tlsHandshakeFunction) Apply(ctx context.Context,
-	maybeInput *ErrorOr[*TCPConnectResultState]) *ErrorOr[*TLSHandshakeResultState] {
-
-	// if the previous stage failed, forward the error
-	if maybeInput.err != nil {
-		return NewErrorOr[*TLSHandshakeResultState](nil, maybeInput.err)
-	}
-	input := maybeInput.Unwrap()
-
+func (f *tlsHandshakeFunction) Apply(
+	ctx context.Context, input *TCPConnectResultState) *ErrorOr[*TLSHandshakeResultState] {
 	// keep using the same trace
 	trace := input.Trace
 

@@ -12,7 +12,7 @@ import (
 // Function is a generic function from A to B.
 type Function[A, B any] interface {
 	// Apply applies ctx and A to the function to produce B.
-	Apply(ctx context.Context, a A) B
+	Apply(ctx context.Context, a A) *ErrorOr[B]
 }
 
 // Compose2 composes a function from A to B with a function from B to C.
@@ -77,8 +77,12 @@ type composer[A, B, C any] struct {
 }
 
 // Apply implements Function[A, C].
-func (h *composer[A, B, C]) Apply(ctx context.Context, a A) C {
-	return h.g.Apply(ctx, h.f.Apply(ctx, a))
+func (h *composer[A, B, C]) Apply(ctx context.Context, a A) *ErrorOr[C] {
+	r := h.f.Apply(ctx, a)
+	if err := r.Error(); err != nil {
+		return &ErrorOr[C]{err: err}
+	}
+	return h.g.Apply(ctx, r.Unwrap())
 }
 
 // Parallelism is the type used to specify parallelism.
@@ -103,7 +107,7 @@ func Map[A, B any](
 	parallelism Parallelism,
 	fx Function[A, B],
 	as ...A,
-) []B {
+) []*ErrorOr[B] {
 	return MapAsync(ctx, parallelism, fx, Stream(as...)).Collect()
 }
 
@@ -113,9 +117,9 @@ func MapAsync[A, B any](
 	parallelism Parallelism,
 	fx Function[A, B],
 	inputs *Streamable[A],
-) *Streamable[B] {
+) *Streamable[*ErrorOr[B]] {
 	// create channel for returning results
-	r := make(chan B)
+	r := make(chan *ErrorOr[B])
 
 	// spawn worker goroutines
 	wg := &sync.WaitGroup{}
@@ -138,7 +142,7 @@ func MapAsync[A, B any](
 		wg.Wait()
 	}()
 
-	return &Streamable[B]{r}
+	return &Streamable[*ErrorOr[B]]{r}
 }
 
 // Parallel executes f1...fn functions in parallel over the same input.
@@ -160,7 +164,7 @@ func Parallel[A, B any](
 	parallelism Parallelism,
 	input A,
 	fn ...Function[A, B],
-) []B {
+) []*ErrorOr[B] {
 	return ParallelAsync(ctx, parallelism, input, Stream(fn...)).Collect()
 }
 
@@ -170,9 +174,9 @@ func ParallelAsync[A, B any](
 	parallelism Parallelism,
 	input A,
 	funcs *Streamable[Function[A, B]],
-) *Streamable[B] {
+) *Streamable[*ErrorOr[B]] {
 	// create channel for returning results
-	r := make(chan B)
+	r := make(chan *ErrorOr[B])
 
 	// spawn worker goroutines
 	wg := &sync.WaitGroup{}
@@ -195,7 +199,7 @@ func ParallelAsync[A, B any](
 		wg.Wait()
 	}()
 
-	return &Streamable[B]{r}
+	return &Streamable[*ErrorOr[B]]{r}
 }
 
 // Streamable wraps a channel that returns T and is closed
@@ -225,17 +229,17 @@ func Stream[T any](ts ...T) *Streamable[T] {
 }
 
 // Lambda takes in input a lambda and constructs the equivalent Function.
-func Lambda[A, B any](fx func(context.Context, A) B) Function[A, B] {
+func Lambda[A, B any](fx func(context.Context, A) *ErrorOr[B]) Function[A, B] {
 	return &lambda[A, B]{fx}
 }
 
 // lambda is the type returned by Lambda.
 type lambda[A, B any] struct {
-	fun func(context.Context, A) B
+	fun func(context.Context, A) *ErrorOr[B]
 }
 
 // Apply implements Function
-func (f *lambda[A, B]) Apply(ctx context.Context, a A) B {
+func (f *lambda[A, B]) Apply(ctx context.Context, a A) *ErrorOr[B] {
 	return f.fun(ctx, a)
 }
 
@@ -261,7 +265,7 @@ func (m *Mutex[T]) Get() (v T) {
 }
 
 // ApplyAsync is equivalent to calling Apply but returns a Streamable.
-func ApplyAsync[A, B any](ctx context.Context, fx Function[A, B], input A) *Streamable[B] {
+func ApplyAsync[A, B any](ctx context.Context, fx Function[A, B], input A) *Streamable[*ErrorOr[B]] {
 	return MapAsync(ctx, Parallelism(1), fx, Stream(input))
 }
 

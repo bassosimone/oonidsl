@@ -121,8 +121,7 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 }
 
 // HTTPRequest issues an HTTP request using a transport and returns a response.
-func HTTPRequest(options ...HTTPRequestOption) Function[
-	*ErrorOr[*HTTPTransportState], *ErrorOr[*HTTPRequestResultState]] {
+func HTTPRequest(options ...HTTPRequestOption) Function[*HTTPTransportState, *HTTPRequestResultState] {
 	f := &httpRequestFunction{}
 	for _, option := range options {
 		option(f)
@@ -155,15 +154,8 @@ type httpRequestFunction struct {
 }
 
 // Apply implements Function.
-func (f *httpRequestFunction) Apply(ctx context.Context,
-	maybeInput *ErrorOr[*HTTPTransportState]) *ErrorOr[*HTTPRequestResultState] {
-
-	// if the previous stage failed, forward the error
-	if maybeInput.err != nil {
-		return NewErrorOr[*HTTPRequestResultState](nil, maybeInput.err)
-	}
-	input := maybeInput.Unwrap()
-
+func (f *httpRequestFunction) Apply(
+	ctx context.Context, input *HTTPTransportState) *ErrorOr[*HTTPRequestResultState] {
 	// create HTTP request
 	const timeout = 10 * time.Second
 	ctx, cancel := context.WithTimeout(ctx, timeout)

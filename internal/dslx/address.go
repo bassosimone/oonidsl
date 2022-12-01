@@ -18,7 +18,8 @@ func AddressSet(dns ...*ErrorOr[*DNSLookupResultState]) *AddressSetState {
 		if e.Error() != nil {
 			continue
 		}
-		for _, a := range e.Unwrap().Addresses {
+		v := e.Unwrap()
+		for _, a := range v.Addresses {
 			uniq[a] = true
 		}
 	}

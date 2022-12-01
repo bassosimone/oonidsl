@@ -42,7 +42,8 @@ func ExtractObservations[T ObservationsProducer](producers ...*ErrorOr[T]) (out 
 		if p.Error() != nil {
 			continue
 		}
-		out = append(out, p.Unwrap().Observations()...)
+		v := p.Unwrap()
+		out = append(out, v.Observations()...)
 	}
 	return
 }
