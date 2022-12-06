@@ -28,13 +28,15 @@ type Result[T any] interface {
 func Err[T any](err error) Result[T] {
 	return &result[T]{
 		err: err,
+		t:   *new(T), // zero value
 	}
 }
 
 // Ok constructs a Result containing a T.
 func Ok[T any](t T) Result[T] {
 	return &result[T]{
-		t: t,
+		err: nil,
+		t:   t,
 	}
 }
 
