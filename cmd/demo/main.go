@@ -54,15 +54,15 @@ func main() {
 	connpool := &dslx.ConnPool{}
 	defer connpool.Close()
 
-	tlsHandshakeErrors := &dslx.ErrorLogger[
-		*dslx.TCPConnectResultState,
-		*dslx.TLSHandshakeResultState,
-	]{}
+	tlsHandshakeErrors := &dslx.ErrorLogger{}
 
 	endpointsResults := fx.Map(ctx, fx.Parallelism(2),
 		fx.ComposeFlat4(
 			dslx.TCPConnect(connpool),
-			tlsHandshakeErrors.Wrap(dslx.TLSHandshake(connpool)),
+			dslx.RecordErrors(
+				tlsHandshakeErrors,
+				dslx.TLSHandshake(connpool),
+			),
 			dslx.HTTPTransportTLS(),
 			dslx.HTTPRequest(),
 		),

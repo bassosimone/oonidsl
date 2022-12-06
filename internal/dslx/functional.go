@@ -45,14 +45,14 @@ func (c *counterFunc[T]) Apply(ctx context.Context, value T) fx.Result[T] {
 }
 
 // ErrorLogger logs errors emitted by Func[A, B].
-type ErrorLogger[A, B any] struct {
+type ErrorLogger struct {
 	errors []error
 	mu     sync.Mutex
 }
 
 // Errors returns the a copy of the internal array of errors and clears
 // the internal array of errors as a side effect.
-func (e *ErrorLogger[A, B]) Errors() []error {
+func (e *ErrorLogger) Errors() []error {
 	defer e.mu.Unlock()
 	e.mu.Lock()
 	v := []error{}
@@ -61,32 +61,32 @@ func (e *ErrorLogger[A, B]) Errors() []error {
 	return v
 }
 
-// record records that an error occurred.
-func (e *ErrorLogger[A, B]) record(err error) {
+// Record records that an error occurred.
+func (e *ErrorLogger) Record(err error) {
 	defer e.mu.Unlock()
 	e.mu.Lock()
 	e.errors = append(e.errors, err)
 }
 
-// Wrap wraps the given function to log errors.
-func (e *ErrorLogger[A, B]) Wrap(fx fx.Func[A, fx.Result[B]]) fx.Func[A, fx.Result[B]] {
-	return &errorLoggerWrapper[A, B]{
+// RecordErrors records errors returned by fx.
+func RecordErrors[A, B any](logger *ErrorLogger, fx fx.Func[A, fx.Result[B]]) fx.Func[A, fx.Result[B]] {
+	return &recordErrorsFunc[A, B]{
 		fx: fx,
-		p:  e,
+		p:  logger,
 	}
 }
 
-// errorLoggerWrapper is the type returned by ErrorLogger.Wrap.
-type errorLoggerWrapper[A, B any] struct {
+// recordErrorsFunc is the type returned by ErrorLogger.Wrap.
+type recordErrorsFunc[A, B any] struct {
 	fx fx.Func[A, fx.Result[B]]
-	p  *ErrorLogger[A, B]
+	p  *ErrorLogger
 }
 
 // Apply implements Func.
-func (elw *errorLoggerWrapper[A, B]) Apply(ctx context.Context, a A) fx.Result[B] {
+func (elw *recordErrorsFunc[A, B]) Apply(ctx context.Context, a A) fx.Result[B] {
 	r := elw.fx.Apply(ctx, a)
 	if r.IsErr() {
-		elw.p.record(r.UnwrapErr())
+		elw.p.Record(r.UnwrapErr())
 	}
 	return r
 }
