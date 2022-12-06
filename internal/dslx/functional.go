@@ -30,21 +30,21 @@ func (c *CounterState[T]) Value() int64 {
 
 // Func returns a fx.Func[T, fx.Result[T]] that updates the counter.
 func (c *CounterState[T]) Func() fx.Func[T, fx.Result[T]] {
-	return &counterFunction[T]{c}
+	return &counterFunc[T]{c}
 }
 
-// counterFunction is the Function returned by CounterFunction.Function.
-type counterFunction[T any] struct {
+// counterFunc is the Func returned by CounterFunc.Func.
+type counterFunc[T any] struct {
 	c *CounterState[T]
 }
 
-// Apply implements Function.
-func (c *counterFunction[T]) Apply(ctx context.Context, value T) fx.Result[T] {
+// Apply implements Func.
+func (c *counterFunc[T]) Apply(ctx context.Context, value T) fx.Result[T] {
 	c.c.n.Add(1)
 	return fx.Ok(value)
 }
 
-// ErrorLogger logs errors emitted by Function[A, B].
+// ErrorLogger logs errors emitted by Func[A, B].
 type ErrorLogger[A, B any] struct {
 	errors []error
 	mu     sync.Mutex
@@ -82,7 +82,7 @@ type errorLoggerWrapper[A, B any] struct {
 	p  *ErrorLogger[A, B]
 }
 
-// Apply implements Function.
+// Apply implements Func.
 func (elw *errorLoggerWrapper[A, B]) Apply(ctx context.Context, a A) fx.Result[B] {
 	r := elw.fx.Apply(ctx, a)
 	if r.IsErr() {

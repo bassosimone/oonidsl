@@ -13,14 +13,14 @@ import (
 
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
 func HTTPTransportTCP() fx.Func[*TCPConnectResultState, fx.Result[*HTTPTransportState]] {
-	return &httpTransportTCPFunction{}
+	return &httpTransportTCPFunc{}
 }
 
-// httpTransportTCPFunction is the function returned by HTTPTransportTCP
-type httpTransportTCPFunction struct{}
+// httpTransportTCPFunc is the function returned by HTTPTransportTCP
+type httpTransportTCPFunc struct{}
 
-// Apply implements Function
-func (f *httpTransportTCPFunction) Apply(
+// Apply implements Func
+func (f *httpTransportTCPFunc) Apply(
 	ctx context.Context, input *TCPConnectResultState) fx.Result[*HTTPTransportState] {
 	// create transport
 	httpTransport := netxlite.NewHTTPTransport(

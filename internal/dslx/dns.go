@@ -129,14 +129,14 @@ func (s *DNSLookupResultState) Observations() []*Observations {
 // DNSLookupGetaddrinfo returns a function that resolves a domain name to
 // IP addresses using libc's getaddrinfo function.
 func DNSLookupGetaddrinfo() fx.Func[*DNSLookupInputState, fx.Result[*DNSLookupResultState]] {
-	return &dnsLookupGetaddrinfoFunction{}
+	return &dnsLookupGetaddrinfoFunc{}
 }
 
-// dnsLookupGetaddrinfoFunction is the function returned by DNSLookupGetaddrinfo.
-type dnsLookupGetaddrinfoFunction struct{}
+// dnsLookupGetaddrinfoFunc is the function returned by DNSLookupGetaddrinfo.
+type dnsLookupGetaddrinfoFunc struct{}
 
-// Apply implements Function.
-func (f *dnsLookupGetaddrinfoFunction) Apply(
+// Apply implements Func.
+func (f *dnsLookupGetaddrinfoFunc) Apply(
 	ctx context.Context, input *DNSLookupInputState) fx.Result[*DNSLookupResultState] {
 
 	// create trace
@@ -180,20 +180,20 @@ func (f *dnsLookupGetaddrinfoFunction) Apply(
 // DNSLookupUDP returns a function that resolves a domain name to
 // IP addresses using the given DNS-over-UDP resolver.
 func DNSLookupUDP(resolver string) fx.Func[*DNSLookupInputState, fx.Result[*DNSLookupResultState]] {
-	return &dnsLookupUDPFunction{
+	return &dnsLookupUDPFunc{
 		Resolver: resolver,
 	}
 }
 
-// dnsLookupUDPFunction is the type returned by DNSLookupUDP. If you want
+// dnsLookupUDPFunc is the type returned by DNSLookupUDP. If you want
 // to init this type manually, make sure you set the MANDATORY fields.
-type dnsLookupUDPFunction struct {
+type dnsLookupUDPFunc struct {
 	// Resolver is the MANDATORY resolver to use.
 	Resolver string
 }
 
-// Apply implements Function.
-func (f *dnsLookupUDPFunction) Apply(
+// Apply implements Func.
+func (f *dnsLookupUDPFunc) Apply(
 	ctx context.Context, input *DNSLookupInputState) fx.Result[*DNSLookupResultState] {
 
 	// create trace

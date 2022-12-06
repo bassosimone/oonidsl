@@ -17,25 +17,25 @@ import (
 )
 
 // TLSHandshakeOption is an option you can pass to TLSHandshake.
-type TLSHandshakeOption func(*tlsHandshakeFunction)
+type TLSHandshakeOption func(*tlsHandshakeFunc)
 
 // TLSHandshakeOptionInsecureSkipVerify controls whether TLS verification is enabled.
 func TLSHandshakeOptionInsecureSkipVerify(value bool) TLSHandshakeOption {
-	return func(thf *tlsHandshakeFunction) {
+	return func(thf *tlsHandshakeFunc) {
 		thf.InsecureSkipVerify = value
 	}
 }
 
 // TLSHandshakeOptionNextProto allows to configure the ALPN protocols.
 func TLSHandshakeOptionNextProto(value []string) TLSHandshakeOption {
-	return func(thf *tlsHandshakeFunction) {
+	return func(thf *tlsHandshakeFunc) {
 		thf.NextProto = value
 	}
 }
 
 // TLSHandshakeOptionServerName allows to configure the SNI to use.
 func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
-	return func(thf *tlsHandshakeFunction) {
+	return func(thf *tlsHandshakeFunc) {
 		thf.ServerName = value
 	}
 }
@@ -43,7 +43,7 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 // TLSHandshake returns a function performing TSL handshakes.
 func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
 	*TCPConnectResultState, fx.Result[*TLSHandshakeResultState]] {
-	f := &tlsHandshakeFunction{
+	f := &tlsHandshakeFunc{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
 		Pool:               pool,
@@ -55,8 +55,8 @@ func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
 	return f
 }
 
-// tlsHandshakeFunction performs TLS handshakes.
-type tlsHandshakeFunction struct {
+// tlsHandshakeFunc performs TLS handshakes.
+type tlsHandshakeFunc struct {
 	// InsecureSkipVerify allows to skip TLS verification.
 	InsecureSkipVerify bool
 
@@ -70,8 +70,8 @@ type tlsHandshakeFunction struct {
 	ServerName string
 }
 
-// Apply implements Function.
-func (f *tlsHandshakeFunction) Apply(
+// Apply implements Func.
+func (f *tlsHandshakeFunc) Apply(
 	ctx context.Context, input *TCPConnectResultState) fx.Result[*TLSHandshakeResultState] {
 	// keep using the same trace
 	trace := input.Trace
@@ -130,14 +130,14 @@ func (f *tlsHandshakeFunction) Apply(
 	return fx.Ok(result)
 }
 
-func (f *tlsHandshakeFunction) serverName(input *TCPConnectResultState) string {
+func (f *tlsHandshakeFunc) serverName(input *TCPConnectResultState) string {
 	if f.ServerName != "" {
 		return f.ServerName
 	}
 	return input.Domain
 }
 
-func (f *tlsHandshakeFunction) nextProto() []string {
+func (f *tlsHandshakeFunc) nextProto() []string {
 	if len(f.NextProto) > 0 {
 		return f.NextProto
 	}

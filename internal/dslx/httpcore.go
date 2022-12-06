@@ -57,53 +57,53 @@ type HTTPTransportState struct {
 }
 
 // HTTPRequestOption is an option you can pass to HTTPRequest.
-type HTTPRequestOption func(*httpRequestFunction)
+type HTTPRequestOption func(*httpRequestFunc)
 
 // HTTPRequestOptionAccept sets the Accept header.
 func HTTPRequestOptionAccept(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.Accept = value
 	}
 }
 
 // HTTPRequestOptionAcceptLanguage sets the Accept header.
 func HTTPRequestOptionAcceptLanguage(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.AcceptLanguage = value
 	}
 }
 
 // HTTPRequestOptionHost sets the Host header.
 func HTTPRequestOptionHost(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.Host = value
 	}
 }
 
 // HTTPRequestOptionHost sets the request method.
 func HTTPRequestOptionMethod(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.Method = value
 	}
 }
 
 // HTTPRequestOptionReferer sets the Referer header.
 func HTTPRequestOptionReferer(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.Referer = value
 	}
 }
 
 // HTTPRequestOptionURLPath sets the URL path.
 func HTTPRequestOptionURLPath(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.URLPath = value
 	}
 }
 
 // HTTPRequestOptionUserAgent sets the UserAgent header.
 func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
-	return func(hrf *httpRequestFunction) {
+	return func(hrf *httpRequestFunc) {
 		hrf.UserAgent = value
 	}
 }
@@ -111,15 +111,15 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 // HTTPRequest issues an HTTP request using a transport and returns a response.
 func HTTPRequest(options ...HTTPRequestOption) fx.Func[
 	*HTTPTransportState, fx.Result[*HTTPRequestResultState]] {
-	f := &httpRequestFunction{}
+	f := &httpRequestFunc{}
 	for _, option := range options {
 		option(f)
 	}
 	return f
 }
 
-// httpRequestFunction is the Function returned by HTTPRequest.
-type httpRequestFunction struct {
+// httpRequestFunc is the Func returned by HTTPRequest.
+type httpRequestFunc struct {
 	// Accept is the OPTIONAL accept header.
 	Accept string
 
@@ -142,8 +142,8 @@ type httpRequestFunction struct {
 	UserAgent string
 }
 
-// Apply implements Function.
-func (f *httpRequestFunction) Apply(
+// Apply implements Func.
+func (f *httpRequestFunc) Apply(
 	ctx context.Context, input *HTTPTransportState) fx.Result[*HTTPRequestResultState] {
 	// create HTTP request
 	const timeout = 10 * time.Second
@@ -198,7 +198,7 @@ func (f *httpRequestFunction) Apply(
 	return fx.Ok(result)
 }
 
-func (f *httpRequestFunction) newHTTPRequest(
+func (f *httpRequestFunc) newHTTPRequest(
 	ctx context.Context, input *HTTPTransportState) (*http.Request, error) {
 	URL := &url.URL{
 		Scheme:      input.Scheme,
@@ -247,13 +247,13 @@ func (f *httpRequestFunction) newHTTPRequest(
 	return req, nil
 }
 
-func (f *httpRequestFunction) urlHost(input *HTTPTransportState) string {
+func (f *httpRequestFunc) urlHost(input *HTTPTransportState) string {
 	if input.Domain != "" {
 		return input.Domain
 	}
 	addr, port, err := net.SplitHostPort(input.Address)
 	if err != nil {
-		input.Logger.Warnf("httpRequestFunction: cannot SplitHostPort for input.Address")
+		input.Logger.Warnf("httpRequestFunc: cannot SplitHostPort for input.Address")
 		return input.Address
 	}
 	switch {
@@ -266,14 +266,14 @@ func (f *httpRequestFunction) urlHost(input *HTTPTransportState) string {
 	}
 }
 
-func (f *httpRequestFunction) urlPath() string {
+func (f *httpRequestFunc) urlPath() string {
 	if f.URLPath != "" {
 		return f.URLPath
 	}
 	return "/"
 }
 
-func (f *httpRequestFunction) do(
+func (f *httpRequestFunc) do(
 	ctx context.Context,
 	input *HTTPTransportState,
 	req *http.Request,

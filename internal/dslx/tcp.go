@@ -17,17 +17,17 @@ import (
 
 // TCPConnect returns a function that establishes TCP connections.
 func TCPConnect(pool *ConnPool) fx.Func[*EndpointState, fx.Result[*TCPConnectResultState]] {
-	f := &tcpConnectFunction{pool}
+	f := &tcpConnectFunc{pool}
 	return f
 }
 
-// tcpConnectFunction is a function that establishes TCP connections.
-type tcpConnectFunction struct {
+// tcpConnectFunc is a function that establishes TCP connections.
+type tcpConnectFunc struct {
 	p *ConnPool
 }
 
 // Apply applies the function to its arguments.
-func (f *tcpConnectFunction) Apply(
+func (f *tcpConnectFunc) Apply(
 	ctx context.Context, input *EndpointState) fx.Result[*TCPConnectResultState] {
 
 	// create trace
