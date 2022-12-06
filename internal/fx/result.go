@@ -99,7 +99,7 @@ func (f *flatMapFunc[A, B]) Apply(ctx context.Context, a Result[A]) Result[B] {
 //       (>>)   :: m a ->  m b         -> m b
 //       return ::   a                 -> m a
 //
-// Where `m a` is written `Result[A]`.
+// Where `m a` is `Result[A]`.
 //
 // Our `>>=` operator is FlatMap().Apply().
 //
