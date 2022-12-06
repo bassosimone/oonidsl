@@ -103,7 +103,7 @@ func (f *flatMapFunc[A, B]) Apply(ctx context.Context, a Result[A]) Result[B] {
 //
 // Our `>>=` operator is FlatMap().Apply().
 //
-// Our `return` operator is Ok.
+// Our `return` operator is Ok().
 //
 // The `>>` (sequence) operator is implicit in the fact that
 // golang is an imperative language.
