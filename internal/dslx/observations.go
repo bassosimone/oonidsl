@@ -5,6 +5,7 @@ package dslx
 //
 
 import (
+	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
 	"github.com/bassosimone/oonidsl/internal/model"
 )
@@ -37,9 +38,9 @@ type ObservationsProducer interface {
 }
 
 // ExtractObservations extracts observations from a list of producers.
-func ExtractObservations[T ObservationsProducer](producers ...ErrorOr[T]) (out []*Observations) {
+func ExtractObservations[T ObservationsProducer](producers ...fx.Result[T]) (out []*Observations) {
 	for _, p := range producers {
-		if p.Error() != nil {
+		if p.IsErr() {
 			continue
 		}
 		v := p.Unwrap()

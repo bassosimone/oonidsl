@@ -8,14 +8,15 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // AddressSet transforms DNS lookup results into a set of IP addresses.
-func AddressSet(dns ...ErrorOr[*DNSLookupResultState]) *AddressSetState {
+func AddressSet(dns ...fx.Result[*DNSLookupResultState]) *AddressSetState {
 	uniq := make(map[string]bool)
 	for _, e := range dns {
-		if e.Error() != nil {
+		if e.IsErr() {
 			continue
 		}
 		v := e.Unwrap()

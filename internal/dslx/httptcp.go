@@ -7,11 +7,12 @@ package dslx
 import (
 	"context"
 
+	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
-func HTTPTransportTCP() Function[*TCPConnectResultState, ErrorOr[*HTTPTransportState]] {
+func HTTPTransportTCP() fx.Func[*TCPConnectResultState, fx.Result[*HTTPTransportState]] {
 	return &httpTransportTCPFunction{}
 }
 
@@ -20,7 +21,7 @@ type httpTransportTCPFunction struct{}
 
 // Apply implements Function
 func (f *httpTransportTCPFunction) Apply(
-	ctx context.Context, input *TCPConnectResultState) ErrorOr[*HTTPTransportState] {
+	ctx context.Context, input *TCPConnectResultState) fx.Result[*HTTPTransportState] {
 	// create transport
 	httpTransport := netxlite.NewHTTPTransport(
 		input.Logger,
@@ -40,5 +41,5 @@ func (f *httpTransportTCPFunction) Apply(
 		Transport:             httpTransport,
 		ZeroTime:              input.ZeroTime,
 	}
-	return NewErrorOr(result, nil)
+	return fx.Ok(result)
 }

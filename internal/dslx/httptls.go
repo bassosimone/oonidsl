@@ -7,11 +7,12 @@ package dslx
 import (
 	"context"
 
+	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // HTTPTransportTLS converts a TLS connection into an HTTP transport.
-func HTTPTransportTLS() Function[*TLSHandshakeResultState, ErrorOr[*HTTPTransportState]] {
+func HTTPTransportTLS() fx.Func[*TLSHandshakeResultState, fx.Result[*HTTPTransportState]] {
 	return &httpTransportTLSFunction{}
 }
 
@@ -20,7 +21,7 @@ type httpTransportTLSFunction struct{}
 
 // Apply implements Function.
 func (f *httpTransportTLSFunction) Apply(
-	ctx context.Context, input *TLSHandshakeResultState) ErrorOr[*HTTPTransportState] {
+	ctx context.Context, input *TLSHandshakeResultState) fx.Result[*HTTPTransportState] {
 	// create transport
 	httpTransport := netxlite.NewHTTPTransport(
 		input.Logger,
@@ -40,5 +41,5 @@ func (f *httpTransportTLSFunction) Apply(
 		Transport:             httpTransport,
 		ZeroTime:              input.ZeroTime,
 	}
-	return NewErrorOr(result, nil)
+	return fx.Ok(result)
 }

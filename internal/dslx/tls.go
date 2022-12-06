@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
 	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
@@ -40,8 +41,8 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) Function[
-	*TCPConnectResultState, ErrorOr[*TLSHandshakeResultState]] {
+func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
+	*TCPConnectResultState, fx.Result[*TLSHandshakeResultState]] {
 	f := &tlsHandshakeFunction{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
@@ -71,7 +72,7 @@ type tlsHandshakeFunction struct {
 
 // Apply implements Function.
 func (f *tlsHandshakeFunction) Apply(
-	ctx context.Context, input *TCPConnectResultState) ErrorOr[*TLSHandshakeResultState] {
+	ctx context.Context, input *TCPConnectResultState) fx.Result[*TLSHandshakeResultState] {
 	// keep using the same trace
 	trace := input.Trace
 
@@ -110,10 +111,14 @@ func (f *tlsHandshakeFunction) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
+	if err != nil {
+		return fx.Err[*TLSHandshakeResultState](err)
+	}
+
 	// start preparing the message to emit on the stdout
 	result := &TLSHandshakeResultState{
 		Address:     input.Address,
-		Conn:        nil, // set later
+		Conn:        conn.(netxlite.TLSConn), // guaranteed to work
 		Domain:      input.Domain,
 		IDGenerator: input.IDGenerator,
 		Logger:      input.Logger,
@@ -122,13 +127,7 @@ func (f *tlsHandshakeFunction) Apply(
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
-
-	// conditionally set the conn
-	if err == nil {
-		result.Conn = conn.(netxlite.TLSConn) // guaranteed to work
-	}
-
-	return NewErrorOr(result, err)
+	return fx.Ok(result)
 }
 
 func (f *tlsHandshakeFunction) serverName(input *TCPConnectResultState) string {
