@@ -90,7 +90,7 @@ func (f *flatMapFunc[A, B]) Apply(ctx context.Context, a Result[A]) Result[B] {
 
 //
 // Let's pause for a second and check how close we are to
-// having actually created a Maybe-like Monad.
+// having actually created a Monad.
 //
 // The following is the definition of Monad in Haskell[1]
 //
