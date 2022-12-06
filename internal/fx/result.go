@@ -121,9 +121,9 @@ func (f *flatMapFunc[A, B]) Apply(ctx context.Context, a Result[A]) Result[B] {
 // For associativity, given:
 //
 //     var (
-//       f Func[A, ErrorOr[B]]
-//       g Func[B, ErrorOr[C]]
-//       h Func[C, ErrorOr[D]]
+//       f Func[A, Result[B]]
+//       g Func[B, Result[C]]
+//       h Func[C, Result[D]]
 //     )
 //
 // we have:
