@@ -1,5 +1,9 @@
 package main
 
+//
+// Top-level measurement algorithm
+//
+
 import (
 	"context"
 	"sync"
