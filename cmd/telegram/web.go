@@ -1,7 +1,7 @@
 package main
 
 //
-// Measuring web.telegram.org.
+// Measuring web.telegram.org
 //
 
 import (
@@ -88,18 +88,13 @@ func measureWeb(
 	)
 
 	// create function for the 443/tcp measurement
-	httpsFunction := fx.ComposeFlat4(
+	httpsFunction := fx.ComposeFlat5(
 		dslx.TCPConnect(connpool),
 		dslx.TLSHandshake(connpool),
 		dslx.HTTPTransportTLS(),
+		dslx.HTTPJustUseOneConn(), // stop subsequent connections
 		dslx.HTTPRequest(),
 	)
-
-	// TODO(bassosimone): we should only allow a single
-	// HTTP measurement to complete
-	//
-	// TODO(bassosimone): we should filter failed TCP
-	// connect attempts caused by missing IPv6
 
 	// start 443/tcp measurement in async fashion
 	httpsResults := fx.Map(
@@ -113,6 +108,8 @@ func measureWeb(
 	tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// TODO(bassosimone): here we should set the web failure
+	// TODO(bassosimone): we should filter failed TCP
+	// connect attempts caused by missing IPv6
 }
 
 // setWebResultFailure results the result of the web experiment in case of failure

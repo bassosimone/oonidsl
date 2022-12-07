@@ -1,7 +1,7 @@
 package main
 
 //
-// Experiment results (aka "test keys").
+// Experiment results (aka "test keys")
 //
 
 import (

@@ -1,7 +1,7 @@
 package main
 
 //
-// Measuring Data Centers (DCs).
+// Measuring Data Centers (DCs)
 //
 
 import (
