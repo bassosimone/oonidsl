@@ -48,7 +48,7 @@ func main() {
 			dslx.EndpointOptionDomain("www.google.com"),
 			dslx.EndpointOptionIDGenerator(idGen),
 			dslx.EndpointOptionLogger(log.Log),
-			dslx.EndpointOptionZerotime(zeroTime),
+			dslx.EndpointOptionZeroTime(zeroTime),
 		)
 
 	connpool := &dslx.ConnPool{}

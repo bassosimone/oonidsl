@@ -40,7 +40,7 @@ func measureDCs(ctx context.Context, state *measurementState) {
 				dslx.EndpointAddress(net.JoinHostPort(addr, strconv.Itoa(port))),
 				dslx.EndpointOptionIDGenerator(state.idGen),
 				dslx.EndpointOptionLogger(state.logger),
-				dslx.EndpointOptionZerotime(state.zeroTime),
+				dslx.EndpointOptionZeroTime(state.zeroTime),
 			))
 		}
 	}

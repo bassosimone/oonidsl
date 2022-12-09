@@ -62,7 +62,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		dslx.EndpointOptionDomain(webDomain),
 		dslx.EndpointOptionIDGenerator(state.idGen),
 		dslx.EndpointOptionLogger(state.logger),
-		dslx.EndpointOptionZerotime(state.zeroTime),
+		dslx.EndpointOptionZeroTime(state.zeroTime),
 	)
 
 	// count the number of successes

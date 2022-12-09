@@ -66,8 +66,8 @@ func EndpointOptionLogger(value model.Logger) EndpointOption {
 	}
 }
 
-// EndpointOptionZerotime allows to set the zero time.
-func EndpointOptionZerotime(value time.Time) EndpointOption {
+// EndpointOptionZeroTime allows to set the zero time.
+func EndpointOptionZeroTime(value time.Time) EndpointOption {
 	return func(es *EndpointState) {
 		es.ZeroTime = value
 	}
