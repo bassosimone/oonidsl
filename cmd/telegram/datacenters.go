@@ -8,37 +8,16 @@ import (
 	"context"
 	"net"
 	"strconv"
-	"sync"
-	"time"
 
 	"github.com/apex/log"
-	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/dslx"
 	"github.com/bassosimone/oonidsl/internal/fx"
 )
 
 // measureDCs measures telegram data centers.
-//
-// Arguments:
-//
-// - ctx is the context;
-//
-// - idGen allows to assign unique IDs to submeasurements;
-//
-// - zeroTime is the "zero time" of the measurement;
-//
-// - tk contains the experiment results;
-//
-// - wg allows us to synchronize with our parent.
-func measureDCs(
-	ctx context.Context,
-	idGen *atomicx.Int64,
-	zeroTime time.Time,
-	tk *testKeys,
-	wg *sync.WaitGroup,
-) {
+func measureDCs(ctx context.Context, state *measurementState) {
 	// tell the parent we terminated
-	defer wg.Done()
+	defer state.wg.Done()
 
 	// ipAddrs contains the DCs IP addresses
 	var ipAddrs = dslx.AddressSet().Add(
@@ -60,9 +39,9 @@ func measureDCs(
 			endpoints = append(endpoints, dslx.Endpoint(
 				dslx.EndpointNetwork("tcp"),
 				dslx.EndpointAddress(net.JoinHostPort(addr, strconv.Itoa(port))),
-				dslx.EndpointOptionIDGenerator(idGen),
+				dslx.EndpointOptionIDGenerator(state.idGen),
 				dslx.EndpointOptionLogger(log.Log),
-				dslx.EndpointOptionZerotime(zeroTime),
+				dslx.EndpointOptionZerotime(state.zeroTime),
 			))
 		}
 	}
@@ -99,10 +78,10 @@ func measureDCs(
 	)
 
 	// extract and merge observations with the test keys
-	tk.mergeObservations(dslx.ExtractObservations(results...)...)
+	state.tk.mergeObservations(dslx.ExtractObservations(results...)...)
 
 	// set top-level keys indicating DCs blocking
-	setDCBlocking(tk, tcpConnectSuccessCounter, httpRoundTripSuccessCounter)
+	setDCBlocking(state.tk, tcpConnectSuccessCounter, httpRoundTripSuccessCounter)
 }
 
 // setDCBlocking sets the blocking status of data centers based on

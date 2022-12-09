@@ -6,47 +6,26 @@ package main
 
 import (
 	"context"
-	"sync"
-	"time"
 
 	"github.com/apex/log"
-	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/dslx"
 	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // measureWeb measures telegram web.
-//
-// Arguments:
-//
-// - ctx is the context;
-//
-// - idGen allows to assign unique IDs to submeasurements;
-//
-// - zeroTime is the "zero time" of the measurement;
-//
-// - tk contains the experiment results;
-//
-// - wg allows us to synchronize with our parent.
-func measureWeb(
-	ctx context.Context,
-	idGen *atomicx.Int64,
-	zeroTime time.Time,
-	tk *testKeys,
-	wg *sync.WaitGroup,
-) {
+func measureWeb(ctx context.Context, state *measurementState) {
 	const webDomain = "web.telegram.org"
 
 	// tell the parent we terminated
-	defer wg.Done()
+	defer state.wg.Done()
 
 	// describe the DNS measurement input
 	dnsInput := dslx.DNSLookupInput(
 		dslx.DomainName(webDomain),
-		dslx.DNSLookupOptionIDGenerator(idGen),
+		dslx.DNSLookupOptionIDGenerator(state.idGen),
 		dslx.DNSLookupOptionLogger(log.Log),
-		dslx.DNSLookupOptionZeroTime(zeroTime),
+		dslx.DNSLookupOptionZeroTime(state.zeroTime),
 	)
 
 	// construct getaddrinfo resolver
@@ -56,11 +35,11 @@ func measureWeb(
 	dnsResults := getaddrinfoResolver.Apply(ctx, dnsInput)
 
 	// extract and merge observations with the test keys
-	tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
+	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
 
 	// if the lookup has failed mark the whole web measurement as failed
 	if dnsResults.IsErr() {
-		setWebResultFailure(tk, dnsResults.UnwrapErr())
+		setWebResultFailure(state.tk, dnsResults.UnwrapErr())
 		return
 	}
 
@@ -69,7 +48,7 @@ func measureWeb(
 
 	// if the set is empty we only got bogons
 	if len(ipAddrs.M) <= 0 {
-		setWebResultFailure(tk, netxlite.ErrDNSBogon)
+		setWebResultFailure(state.tk, netxlite.ErrDNSBogon)
 		return
 	}
 
@@ -82,9 +61,9 @@ func measureWeb(
 		dslx.EndpointNetwork("tcp"),
 		dslx.EndpointPort(443),
 		dslx.EndpointOptionDomain(webDomain),
-		dslx.EndpointOptionIDGenerator(idGen),
+		dslx.EndpointOptionIDGenerator(state.idGen),
 		dslx.EndpointOptionLogger(log.Log),
-		dslx.EndpointOptionZerotime(zeroTime),
+		dslx.EndpointOptionZerotime(state.zeroTime),
 	)
 
 	// create function for the 443/tcp measurement
@@ -105,7 +84,7 @@ func measureWeb(
 	)
 
 	// extract and merge observations with the test keys
-	tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
+	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// TODO(bassosimone): here we should set the web failure
 	// TODO(bassosimone): we should filter failed TCP
