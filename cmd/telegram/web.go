@@ -65,13 +65,17 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		dslx.EndpointOptionZerotime(state.zeroTime),
 	)
 
+	// count the number of successes
+	successes := dslx.Counter[*dslx.HTTPRequestResultState]()
+
 	// create function for the 443/tcp measurement
-	httpsFunction := fx.ComposeFlat5(
+	httpsFunction := fx.ComposeFlat6(
 		dslx.TCPConnect(connpool),
 		dslx.TLSHandshake(connpool),
 		dslx.HTTPTransportTLS(),
 		dslx.HTTPJustUseOneConn(), // stop subsequent connections
 		dslx.HTTPRequest(),
+		successes.Func(), // number of times we arrive here
 	)
 
 	// start 443/tcp measurement in async fashion
@@ -85,9 +89,34 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	// extract and merge observations with the test keys
 	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
-	// TODO(bassosimone): here we should set the web failure
-	// TODO(bassosimone): we should filter failed TCP
-	// connect attempts caused by missing IPv6
+	// if we saw successes, then it's not blocked
+	if successes.Value() > 0 {
+		state.tk.setWebResultSuccess()
+		return
+	}
+
+	// attempt to set a meaningful error, if that's possible
+	if err := dslx.FirstErrorExcludingBrokenIPv6Errors(httpsResults...); err != nil {
+		state.tk.setWebResultFailure(err)
+		return
+	}
+
+	// otherwise fallback to whatever is the first error.
+	if err := dslx.FirstError(httpsResults...); err != nil {
+		state.tk.setWebResultFailure(err)
+		return
+	}
+
+	// the last resort is to set an unknown failure error
+	state.tk.setWebResultFailure(netxlite.ErrUnknown)
+}
+
+// setWebResultSuccess results the result of the web experiment in case of success
+func (tk *testKeys) setWebResultSuccess() {
+	defer tk.mu.Unlock()
+	tk.mu.Lock()
+	tk.TelegramWebFailure = nil
+	tk.TelegramWebStatus = "ok"
 }
 
 // setWebResultFailure results the result of the web experiment in case of failure

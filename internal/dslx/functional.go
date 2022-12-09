@@ -10,6 +10,7 @@ import (
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/fx"
+	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // Counter generates an instance of *CounterState.
@@ -89,4 +90,34 @@ func (elw *recordErrorsFunc[A, B]) Apply(ctx context.Context, a A) fx.Result[B] 
 		elw.p.Record(r.UnwrapErr())
 	}
 	return r
+}
+
+// FirstErrorExcludingBrokenIPv6Errors returns the first error in a list of
+// fx.Result[T] excluding errors known to be linked with IPv6 issues.
+func FirstErrorExcludingBrokenIPv6Errors[T any](entries ...fx.Result[T]) error {
+	for _, entry := range entries {
+		if !entry.IsErr() {
+			continue
+		}
+		err := entry.UnwrapErr()
+		switch err.Error() {
+		case netxlite.FailureNetworkUnreachable, netxlite.FailureHostUnreachable:
+			// This class of errors is often times linked with wrongly
+			// configured IPv6, therefore we skip them.
+		default:
+			return err
+		}
+	}
+	return nil
+}
+
+// FirstError returns the first error in a list of fx.Result[T].
+func FirstError[T any](entries ...fx.Result[T]) error {
+	for _, entry := range entries {
+		if !entry.IsErr() {
+			continue
+		}
+		return entry.UnwrapErr()
+	}
+	return nil
 }
