@@ -7,6 +7,7 @@ package dslx
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
@@ -33,6 +34,13 @@ func TLSHandshakeOptionNextProto(value []string) TLSHandshakeOption {
 	}
 }
 
+// TLSHandshakeOptionRootCAs allows to configure custom root CAs.
+func TLSHandshakeOptionRootCAs(value *x509.CertPool) TLSHandshakeOption {
+	return func(thf *tlsHandshakeFunc) {
+		thf.RootCAs = value
+	}
+}
+
 // TLSHandshakeOptionServerName allows to configure the SNI to use.
 func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 	return func(thf *tlsHandshakeFunc) {
@@ -47,6 +55,7 @@ func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
 		Pool:               pool,
+		RootCAs:            netxlite.NewDefaultCertPool(),
 		ServerName:         "",
 	}
 	for _, option := range options {
@@ -65,6 +74,9 @@ type tlsHandshakeFunc struct {
 
 	// Pool is the Pool that owns us.
 	Pool *ConnPool
+
+	// RootCAs contains the Root CAs to use.
+	RootCAs *x509.CertPool
 
 	// ServerName is the ServerName to handshake for.
 	ServerName string
@@ -95,7 +107,7 @@ func (f *tlsHandshakeFunc) Apply(
 	config := &tls.Config{
 		NextProtos:         nextProto,
 		InsecureSkipVerify: f.InsecureSkipVerify,
-		RootCAs:            netxlite.NewDefaultCertPool(),
+		RootCAs:            f.RootCAs,
 		ServerName:         serverName,
 	}
 	const timeout = 10 * time.Second
