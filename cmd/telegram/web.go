@@ -78,7 +78,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		successes.Func(), // number of times we arrive here
 	)
 
-	// start 443/tcp measurement in async fashion
+	// run 443/tcp measurement
 	httpsResults := fx.Map(
 		ctx,
 		fx.Parallelism(2),
@@ -101,7 +101,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		return
 	}
 
-	// otherwise fallback to whatever is the first error.
+	// otherwise fallback to whatever is the first error
 	if err := dslx.FirstError(httpsResults...); err != nil {
 		state.tk.setWebResultFailure(err)
 		return
@@ -111,7 +111,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	state.tk.setWebResultFailure(netxlite.ErrUnknown)
 }
 
-// setWebResultSuccess results the result of the web experiment in case of success
+// setWebResultSuccess sets the result of the web experiment in case of success
 func (tk *testKeys) setWebResultSuccess() {
 	defer tk.mu.Unlock()
 	tk.mu.Lock()
@@ -119,7 +119,7 @@ func (tk *testKeys) setWebResultSuccess() {
 	tk.TelegramWebStatus = "ok"
 }
 
-// setWebResultFailure results the result of the web experiment in case of failure
+// setWebResultFailure sets the result of the web experiment in case of failure
 func (tk *testKeys) setWebResultFailure(err error) {
 	defer tk.mu.Unlock()
 	tk.mu.Lock()
