@@ -38,7 +38,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 
 	// if the lookup has failed mark the whole web measurement as failed
 	if dnsResults.IsErr() {
-		setWebResultFailure(state.tk, dnsResults.UnwrapErr())
+		state.tk.setWebResultFailure(dnsResults.UnwrapErr())
 		return
 	}
 
@@ -47,7 +47,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 
 	// if the set is empty we only got bogons
 	if len(ipAddrs.M) <= 0 {
-		setWebResultFailure(state.tk, netxlite.ErrDNSBogon)
+		state.tk.setWebResultFailure(netxlite.ErrDNSBogon)
 		return
 	}
 
@@ -91,7 +91,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 }
 
 // setWebResultFailure results the result of the web experiment in case of failure
-func setWebResultFailure(tk *testKeys, err error) {
+func (tk *testKeys) setWebResultFailure(err error) {
 	defer tk.mu.Unlock()
 	tk.mu.Lock()
 	s := err.Error()

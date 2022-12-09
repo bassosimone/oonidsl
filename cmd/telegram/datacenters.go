@@ -80,7 +80,7 @@ func measureDCs(ctx context.Context, state *measurementState) {
 	state.tk.mergeObservations(dslx.ExtractObservations(results...)...)
 
 	// set top-level keys indicating DCs blocking
-	setDCBlocking(state.tk, tcpConnectSuccessCounter, httpRoundTripSuccessCounter)
+	state.tk.setDCBlocking(tcpConnectSuccessCounter, httpRoundTripSuccessCounter)
 }
 
 // setDCBlocking sets the blocking status of data centers based on
@@ -88,16 +88,13 @@ func measureDCs(ctx context.Context, state *measurementState) {
 //
 // Arguments:
 //
-// - tk contains the experiment results;
-//
 // - tcpSuccessCount is the number of times a TCP connect succeded;
 //
 // - httpSuccessCount is like tcpSuccessCount but for HTTP.
 //
 // We say there is TCP blocking if no TCP connect succeded. Likewise, we
 // say there is HTTP blocking when no HTTP round trip succeded.
-func setDCBlocking(
-	tk *testKeys,
+func (tk *testKeys) setDCBlocking(
 	tcpSuccessCounter *dslx.CounterState[*dslx.TCPConnectResultState],
 	httpSuccessCounter *dslx.CounterState[*dslx.HTTPRequestResultState],
 ) {
