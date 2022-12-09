@@ -7,7 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apex/log"
 	"github.com/bassosimone/oonidsl/internal/atomicx"
+	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
@@ -16,11 +18,14 @@ type measurementState struct {
 	// dGen allows to assign unique IDs to submeasurements.
 	idGen *atomicx.Int64
 
-	// zeroTime is the "zero time" of the measurement.
-	zeroTime time.Time
+	// logger contains the logger.
+	logger model.Logger
 
 	// tk contains the experiment results.
 	tk *testKeys
+
+	// zeroTime is the "zero time" of the measurement.
+	zeroTime time.Time
 
 	// wg allows waiting for background goroutines.
 	wg *sync.WaitGroup
@@ -29,8 +34,9 @@ type measurementState struct {
 func main() {
 	state := &measurementState{
 		idGen:    &atomicx.Int64{},
-		zeroTime: time.Now(),
+		logger:   log.Log,
 		tk:       &testKeys{},
+		zeroTime: time.Now(),
 		wg:       &sync.WaitGroup{},
 	}
 	ctx := context.Background()

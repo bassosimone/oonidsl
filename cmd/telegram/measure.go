@@ -4,9 +4,7 @@ package main
 // Top-level measurement algorithm
 //
 
-import (
-	"context"
-)
+import "context"
 
 // measure is the top-level measurement algorithm.
 func measure(ctx context.Context, state *measurementState) error {

@@ -9,7 +9,6 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/apex/log"
 	"github.com/bassosimone/oonidsl/internal/dslx"
 	"github.com/bassosimone/oonidsl/internal/fx"
 )
@@ -40,7 +39,7 @@ func measureDCs(ctx context.Context, state *measurementState) {
 				dslx.EndpointNetwork("tcp"),
 				dslx.EndpointAddress(net.JoinHostPort(addr, strconv.Itoa(port))),
 				dslx.EndpointOptionIDGenerator(state.idGen),
-				dslx.EndpointOptionLogger(log.Log),
+				dslx.EndpointOptionLogger(state.logger),
 				dslx.EndpointOptionZerotime(state.zeroTime),
 			))
 		}

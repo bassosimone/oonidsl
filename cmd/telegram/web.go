@@ -7,7 +7,6 @@ package main
 import (
 	"context"
 
-	"github.com/apex/log"
 	"github.com/bassosimone/oonidsl/internal/dslx"
 	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
@@ -24,7 +23,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	dnsInput := dslx.DNSLookupInput(
 		dslx.DomainName(webDomain),
 		dslx.DNSLookupOptionIDGenerator(state.idGen),
-		dslx.DNSLookupOptionLogger(log.Log),
+		dslx.DNSLookupOptionLogger(state.logger),
 		dslx.DNSLookupOptionZeroTime(state.zeroTime),
 	)
 
@@ -62,7 +61,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		dslx.EndpointPort(443),
 		dslx.EndpointOptionDomain(webDomain),
 		dslx.EndpointOptionIDGenerator(state.idGen),
-		dslx.EndpointOptionLogger(log.Log),
+		dslx.EndpointOptionLogger(state.logger),
 		dslx.EndpointOptionZerotime(state.zeroTime),
 	)
 
