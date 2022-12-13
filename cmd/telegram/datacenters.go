@@ -58,7 +58,7 @@ func measureDCs(ctx context.Context, state *measurementState) {
 	defer connpool.Close()
 
 	// construct the function to measure the endpoints
-	function := fx.ComposeFlat5(
+	function := fx.ComposeResult5(
 		dslx.TCPConnect(connpool),
 		tcpConnectSuccessCounter.Func(), // count number of successful TCP connects
 		dslx.HTTPTransportTCP(),

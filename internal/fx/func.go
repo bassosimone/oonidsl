@@ -6,10 +6,10 @@ package fx
 
 import "context"
 
-// Func is a morphism inside a given category where
-// A and B are objects in the category.
+// Func is a generic function from A to B.
 type Func[A, B any] interface {
-	Apply(ctx context.Context, a A) (b B)
+	// Apply applies the function to its arguments and produces a result.
+	Apply(ctx context.Context, a A) B
 }
 
 // Compose composes f: A -> B with g: B -> C.
@@ -19,7 +19,10 @@ func Compose[A, B, C any](f Func[A, B], g Func[B, C]) Func[A, C] {
 
 // composeFunc[A, B, C] is the type returned by Compose.
 type composeFunc[A, B, C any] struct {
+	// f is the first function to compose.
 	f Func[A, B]
+
+	// g is the second functions to compose.
 	g Func[B, C]
 }
 

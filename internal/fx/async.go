@@ -12,20 +12,20 @@ import (
 // Parallelism is the type used to specify parallelism.
 type Parallelism int
 
-// Map applies the given Func to a list of elements.
+// Map applies fx to a list of elements.
 //
 // Arguments:
 //
 // - ctx is the context;
 //
 // - parallelism is the number of goroutines to use (we'll use
-// a single goroutine is parallelism is < 1);
+// a single goroutine if parallelism is < 1);
 //
-// - fx is the Func to apply;
+// - fx is the function to apply;
 //
 // - as is the list on which to apply fx.
 //
-// The return value is the list [fx(a)] for every a in A.
+// The return value is the list [fx(a)] for every a in as.
 func Map[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
@@ -69,18 +69,18 @@ func MapAsync[A, B any](
 	return &Streamable[Result[B]]{r}
 }
 
-// Parallel executes f1...fn Funcs in parallel over the same input.
+// Parallel executes f1...fn in parallel over the same input.
 //
 // Arguments:
 //
 // - ctx is the context;
 //
 // - parallelism is the number of goroutines to use (we'll use
-// a single goroutine is parallelism is < 1);
+// a single goroutine if parallelism is < 1);
 //
-// - input is the Funcs' input;
+// - input is the input;
 //
-// - fn is the list of Funcs.
+// - fn is the list of functions.
 //
 // The return value is the list [fx(a)] for every fx in fn.
 func Parallel[A, B any](
