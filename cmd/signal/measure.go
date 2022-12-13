@@ -87,13 +87,14 @@ func measureTargets(ctx context.Context, state *measurementState) {
 	certPool, err := newCertPool()
 	if err != nil {
 		// TODO
+		panic("what to do here?")
 	}
 
 	// count the number of successes
 	successes := dslx.Counter[*dslx.HTTPRequestResultState]()
 
 	// create function for the 443/tcp measurement
-	httpsFunction := fx.ComposeFlat6(
+	httpsFunction := fx.ComposeResult6(
 		dslx.TCPConnect(connpool),
 		dslx.TLSHandshake(
 			connpool,
