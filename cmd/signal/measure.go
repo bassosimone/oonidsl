@@ -94,7 +94,7 @@ func measureTargets(ctx context.Context, state *measurementState) {
 		successes = dslx.Counter[*dslx.HTTPRequestResultState]()
 
 		// create function for the 443/tcp/tls/https measurement
-		httpsFunction := fx.ComposeFlat6(
+		httpsFunction := fx.ComposeResult6(
 			dslx.TCPConnect(connpool),
 			dslx.TLSHandshake(
 				connpool,
