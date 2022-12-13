@@ -149,22 +149,14 @@ func Unit[A any]() Func[A, Result[A]] {
 //
 // Left unit holds because we can write:
 //
-//     var (
-//       f Function[A, Result[B]]
-//       a Result[A]
-//     )
-//
+//     var f Function[A, Result[B]]
 //     g := ComposeResult(Unit[A](), f)
 //
 // where g is equivalent to f.
 //
 // Right unit holds because we can write:
 //
-//     var (
-//       f Function[A, Result[B]]
-//       a Result[A]
-//     )
-//
+//     var f Function[A, Result[B]]
 //     g := ComposeResult(f, Unit[B]())
 //
 // where g is equivalent to f.
