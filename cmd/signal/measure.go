@@ -44,7 +44,17 @@ func measureTargets(ctx context.Context, state *measurementState) {
 	// construct getaddrinfo resolver
 	lookup := dslx.DNSLookupGetaddrinfo()
 
-	var endpoints []*dslx.EndpointState
+	// create the established connections pool
+	connpool := &dslx.ConnPool{}
+	defer connpool.Close()
+
+	certPool, err := newCertPool()
+	if err != nil {
+		// TODO
+	}
+
+	var successes *dslx.CounterState[*dslx.HTTPRequestResultState]
+	var httpsResults []fx.Result[*dslx.HTTPRequestResultState]
 
 	for _, d := range domains {
 		// describe the DNS measurement input
@@ -71,50 +81,42 @@ func measureTargets(ctx context.Context, state *measurementState) {
 		ipAddrs := dslx.AddressSet(dnsResults...).RemoveBogons()
 
 		// create the set of endpoints
-		endpoints = append(endpoints, ipAddrs.ToEndpoints(
+		endpoints := ipAddrs.ToEndpoints(
 			dslx.EndpointNetwork("tcp"),
 			dslx.EndpointPort(443),
 			dslx.EndpointOptionDomain(d),
 			dslx.EndpointOptionIDGenerator(state.idGen),
 			dslx.EndpointOptionLogger(state.logger),
 			dslx.EndpointOptionZeroTime(state.zeroTime),
-		)...)
+		)
+
+		// count the number of successes
+		successes = dslx.Counter[*dslx.HTTPRequestResultState]()
+
+		// create function for the 443/tcp/tls/https measurement
+		httpsFunction := fx.ComposeFlat6(
+			dslx.TCPConnect(connpool),
+			dslx.TLSHandshake(
+				connpool,
+				dslx.TLSHandshakeOptionRootCAs(certPool),
+			),
+			dslx.HTTPTransportTLS(),
+			dslx.HTTPJustUseOneConn(), // stop subsequent connections
+			dslx.HTTPRequest(),
+			successes.Func(), // number of times we arrive here
+		)
+
+		// run 443/tcp/tls/https measurement
+		httpsResults = fx.Map(
+			ctx,
+			fx.Parallelism(2),
+			httpsFunction,
+			endpoints...,
+		)
+
+		// extract and merge observations with the test keys
+		state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 	}
-	// create the established connections pool
-	connpool := &dslx.ConnPool{}
-	defer connpool.Close()
-
-	certPool, err := newCertPool()
-	if err != nil {
-		// TODO
-	}
-
-	// count the number of successes
-	successes := dslx.Counter[*dslx.HTTPRequestResultState]()
-
-	// create function for the 443/tcp measurement
-	httpsFunction := fx.ComposeFlat6(
-		dslx.TCPConnect(connpool),
-		dslx.TLSHandshake(
-			connpool,
-			dslx.TLSHandshakeOptionRootCAs(certPool),
-		),
-		dslx.HTTPTransportTLS(),
-		dslx.HTTPJustUseOneConn(), // stop subsequent connections
-		dslx.HTTPRequest(),
-		successes.Func(), // number of times we arrive here
-	)
-
-	// run 443/tcp measurement
-	httpsResults := fx.Map(
-		ctx,
-		fx.Parallelism(2),
-		httpsFunction,
-		endpoints...,
-	)
-
-	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// if we saw successes, then it's not blocked
 	// TODO: re-define what success means here!
