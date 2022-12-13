@@ -1,7 +1,7 @@
 package fx
 
 //
-// The Result[T] monad
+// Result[T] monad
 //
 
 import (
@@ -9,8 +9,7 @@ import (
 	"errors"
 )
 
-// Result is a monad containing either an object
-// in the category, T, or an error.
+// Result either contains T or an error.
 type Result[T any] interface {
 	// IsErr returns whether Result contains an error.
 	IsErr() bool
@@ -70,81 +69,34 @@ func (r *result[T]) UnwrapErr() error {
 	return r.err
 }
 
-// FlatMap transforms f: A -> Result[B] in f': Result[A] -> Result[B].
-func FlatMap[A, B any](f Func[A, Result[B]]) Func[Result[A], Result[B]] {
-	return &flatMapFunc[A, B]{f: f}
+// ComposeResult composes f: A -> Result[B] with g: B -> Result[C]. The
+// composition rule is such that, if f returns an error, we construct a Result[C]
+// from such an error and return it without invoking g.
+func ComposeResult[A, B, C any](f Func[A, Result[B]], g Func[B, Result[C]]) Func[A, Result[C]] {
+	return &composeResultFunc[A, B, C]{f: f, g: g}
 }
 
-// flatMapFunc is the type returned by FlatMap.
-type flatMapFunc[A, B any] struct {
+// composeResultFunc[A, B, C] is the type returned by ComposeResult.
+type composeResultFunc[A, B, C any] struct {
+	// f is the first function to compose.
 	f Func[A, Result[B]]
+
+	// g is the second functions to compose.
+	g Func[B, Result[C]]
 }
 
 // Apply implements Func
-func (f *flatMapFunc[A, B]) Apply(ctx context.Context, a Result[A]) Result[B] {
-	if a.IsErr() {
-		return Err[B](a.UnwrapErr())
+func (f *composeResultFunc[A, B, C]) Apply(ctx context.Context, a A) Result[C] {
+	r := f.f.Apply(ctx, a)
+	if r.IsErr() {
+		return Err[C](r.UnwrapErr()) // as documented
 	}
-	return f.f.Apply(ctx, a.Unwrap())
+	v := r.Unwrap()
+	return f.g.Apply(ctx, v)
 }
 
-//
-// Let's pause for a second and check how close we are
-// to having actually created a Monad.
-//
-// The following is the definition of Monad in Haskell[1]:
-//
-//     class Monad m where
-//       (>>=)  :: m a -> (  a -> m b) -> m b
-//       (>>)   :: m a ->  m b         -> m b
-//       return ::   a                 -> m a
-//
-// Where `m a` is `Result[A]`.
-//
-// Our `>>=` operator is FlatMap().Apply().
-//
-// Our `return` operator is Ok().
-//
-// The `>>` (sequence) operator is implicit in the fact that
-// golang is an imperative language.
-//
-// Then we have the three monad laws [2] to satisfy.
-//
-// Left identity is satisfied because:
-//
-//     f(Ok(x).Unwrap())           ===   f(x)
-//
-// Right identity is satisfied because:
-//
-//     Ok(m.Unwrap())              ===   m
-//
-// For associativity, given:
-//
-//     var (
-//       f Func[A, Result[B]]
-//       g Func[B, Result[C]]
-//       h Func[C, Result[D]]
-//     )
-//
-// we have:
-//
-//     Compose(Compose(FlapMap(f), FlapMap(g)), FlatMap(h)) ===
-//     Compose(FlapMap(f), Compose(FlapMap(g), FlapMap(h)))
-//
-// .. [1] https://wiki.haskell.org/Monad
-//
-// .. [2] https://wiki.haskell.org/Monad_laws
-//
-// To conclude, it seems Result[T] is close to being a monad.
-//
-
-// ComposeFlat composes f with FlatMap(g).
-func ComposeFlat[A, B, C any](f Func[A, Result[B]], g Func[B, Result[C]]) Func[A, Result[C]] {
-	return Compose(f, FlatMap(g))
-}
-
-// ComposeFlat3 composes-flat three functions together.
-func ComposeFlat3[
+// ComposeResult3 is ComposeResult for N=3.
+func ComposeResult3[
 	T0 any,
 	T1 any,
 	T2 any,
@@ -154,5 +106,68 @@ func ComposeFlat3[
 	f1 Func[T1, Result[T2]],
 	f2 Func[T2, Result[T3]],
 ) Func[T0, Result[T3]] {
-	return Compose(f0, FlatMap(ComposeFlat(f1, f2)))
+	return ComposeResult(f0, ComposeResult(f1, f2))
 }
+
+// Unit returns a function that calls [Ok] on its argument.
+func Unit[A any]() Func[A, Result[A]] {
+	return Lambda(func(ctx context.Context, a A) Result[A] {
+		return Ok(a)
+	})
+}
+
+//
+// Let's pause for a second and check how close we are
+// to having actually created a Monad.
+//
+// We will use as reference "Monads: Programmer's Definition" in
+// "Cathegory Theory for Computer Programmers" by Bartosz
+// Milewski. See https://github.com/hmemcpy/milewski-ctfp-pdf.
+//
+// The definition of Monad (pp. 292) is:
+//
+//     class Monad m where
+//       (>=>) :: (a -> m b) -> (b -> m c) -> (a -> m c)
+//       return :: a -> m a
+//
+// Our fish (`>=>`) operator is [ComposeResult]. Our `return`
+// equivalent is the [Ok] function.
+//
+// Then we have to verify monadic laws:
+//
+//     (f >=> g) >=> h = f >=> (g >=> h)  -- associativity
+//     return >=> f    = f                -- left unit
+//     f >=> return    = f                -- right unit
+//
+// Associativity holds because we can write ComposeResult3 as:
+//
+//     return ComposeResult(ComposeResult(f0, f1), f2)
+//
+// as well as:
+//
+//     return ComposeResult(f0, ComposeResult(f1, f2))
+//
+// Left unit holds because we can write:
+//
+//     var (
+//       f Function[A, Result[B]]
+//       a Result[A]
+//     )
+//
+//     g := ComposeResult(Unit[A](), f)
+//
+// where g is equivalent to f.
+//
+// Right unit holds because we can write:
+//
+//     var (
+//       f Function[A, Result[B]]
+//       a Result[A]
+//     )
+//
+//     g := ComposeResult(f, Unit[B]())
+//
+// where g is equivalent to f.
+//
+// We conclude that Result[T] _is_ a monad.
+//

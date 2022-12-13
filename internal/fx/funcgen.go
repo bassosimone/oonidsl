@@ -1,7 +1,7 @@
 package fx
 
 //
-// Auto-generated code for Func[A, B]
+// Auto-generated code for composing functions together
 //
 
 // Compose4 composes N=4 functions together

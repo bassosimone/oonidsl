@@ -57,7 +57,7 @@ func main() {
 	tlsHandshakeErrors := &dslx.ErrorLogger{}
 
 	endpointsResults := fx.Map(ctx, fx.Parallelism(2),
-		fx.ComposeFlat4(
+		fx.ComposeResult4(
 			dslx.TCPConnect(connpool),
 			dslx.RecordErrors(
 				tlsHandshakeErrors,
