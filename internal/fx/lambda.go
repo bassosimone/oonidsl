@@ -1,12 +1,12 @@
 package fx
 
 //
-// Lambda constructor
+// Lambda
 //
 
 import "context"
 
-// Lambda takes in input a lambda and constructs the equivalent Func.
+// Lambda turns a golang lambda into a Func.
 func Lambda[A, B any](fx func(context.Context, A) B) Func[A, B] {
 	return &lambda[A, B]{fx}
 }
