@@ -155,7 +155,7 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 	ol.Stop(err)
 
 	state := &DNSLookupResultState{
-		Addresses:   addrs,
+		Addresses:   addrs, // maybe empty
 		Domain:      input.Domain,
 		IDGenerator: input.IDGenerator,
 		Logger:      input.Logger,

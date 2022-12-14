@@ -37,20 +37,20 @@ type Result[State any] struct {
 
 // Compose2 composes two operations such as [TCPConnect] and [TLSHandshake].
 func Compose2[A, B, C any](f Func[A, *Result[B]], g Func[B, *Result[C]]) Func[A, *Result[C]] {
-	return &compose2[A, B, C]{
+	return &compose2Func[A, B, C]{
 		f: f,
 		g: g,
 	}
 }
 
-// compose2 is the type returned by [Compose2].
-type compose2[A, B, C any] struct {
+// compose2Func is the type returned by [Compose2].
+type compose2Func[A, B, C any] struct {
 	f Func[A, *Result[B]]
 	g Func[B, *Result[C]]
 }
 
 // Apply implements Func
-func (h *compose2[A, B, C]) Apply(ctx context.Context, a A) *Result[C] {
+func (h *compose2Func[A, B, C]) Apply(ctx context.Context, a A) *Result[C] {
 	mb := h.f.Apply(ctx, a)
 	runtimex.Assert(mb != nil, "h.f.Apply returned a nil pointer")
 	if mb.Skipped || mb.Error != nil {
@@ -77,7 +77,7 @@ func Counter[T any]() *CounterState[T] {
 }
 
 // CounterState allows to count how many times
-// a fx.Func[T, fx.Result[T]] is invoked.
+// a Func[T, *Result[T]] is invoked.
 type CounterState[T any] struct {
 	n atomicx.Int64
 }
@@ -87,7 +87,7 @@ func (c *CounterState[T]) Value() int64 {
 	return c.n.Load()
 }
 
-// Func returns a fx.Func[T, fx.Result[T]] that updates the counter.
+// Func returns a Func[T, *Result[T]] that updates the counter.
 func (c *CounterState[T]) Func() Func[T, *Result[T]] {
 	return &counterFunc[T]{c}
 }
@@ -156,7 +156,7 @@ func (elw *recordErrorsFunc[A, B]) Apply(ctx context.Context, a A) *Result[B] {
 }
 
 // FirstErrorExcludingBrokenIPv6Errors returns the first error in a list of
-// fx.Result[T] excluding errors known to be linked with IPv6 issues.
+// *Result[T] excluding errors known to be linked with IPv6 issues.
 func FirstErrorExcludingBrokenIPv6Errors[T any](entries ...*Result[T]) error {
 	for _, entry := range entries {
 		if entry.Error != nil {
@@ -174,7 +174,7 @@ func FirstErrorExcludingBrokenIPv6Errors[T any](entries ...*Result[T]) error {
 	return nil
 }
 
-// FirstError returns the first error in a list of fx.Result[T].
+// FirstError returns the first error in a list of *Result[T].
 func FirstError[T any](entries ...*Result[T]) error {
 	for _, entry := range entries {
 		if entry.Error != nil {

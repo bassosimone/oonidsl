@@ -4,7 +4,7 @@ package dslx
 // Functional extensions (auto-generated code)
 //
 
-// Compose3 is Compose for N=3.
+// Compose3 composes N=3 functions.
 func Compose3[
 	T0 any,
 	T1 any,
@@ -18,7 +18,7 @@ func Compose3[
 	return Compose2(f0, Compose2(f1, f2))
 }
 
-// Compose4 is Compose for N=4.
+// Compose4 composes N=4 functions.
 func Compose4[
 	T0 any,
 	T1 any,
@@ -34,7 +34,7 @@ func Compose4[
 	return Compose2(f0, Compose3(f1, f2, f3))
 }
 
-// Compose5 is Compose for N=5.
+// Compose5 composes N=5 functions.
 func Compose5[
 	T0 any,
 	T1 any,
@@ -52,7 +52,7 @@ func Compose5[
 	return Compose2(f0, Compose4(f1, f2, f3, f4))
 }
 
-// Compose6 is Compose for N=6.
+// Compose6 composes N=6 functions.
 func Compose6[
 	T0 any,
 	T1 any,
@@ -72,7 +72,7 @@ func Compose6[
 	return Compose2(f0, Compose5(f1, f2, f3, f4, f5))
 }
 
-// Compose7 is Compose for N=7.
+// Compose7 composes N=7 functions.
 func Compose7[
 	T0 any,
 	T1 any,
@@ -94,7 +94,7 @@ func Compose7[
 	return Compose2(f0, Compose6(f1, f2, f3, f4, f5, f6))
 }
 
-// Compose8 is Compose for N=8.
+// Compose8 composes N=8 functions.
 func Compose8[
 	T0 any,
 	T1 any,
@@ -118,7 +118,7 @@ func Compose8[
 	return Compose2(f0, Compose7(f1, f2, f3, f4, f5, f6, f7))
 }
 
-// Compose9 is Compose for N=9.
+// Compose9 composes N=9 functions.
 func Compose9[
 	T0 any,
 	T1 any,
@@ -144,7 +144,7 @@ func Compose9[
 	return Compose2(f0, Compose8(f1, f2, f3, f4, f5, f6, f7, f8))
 }
 
-// Compose10 is Compose for N=10.
+// Compose10 composes N=10 functions.
 func Compose10[
 	T0 any,
 	T1 any,
@@ -172,7 +172,7 @@ func Compose10[
 	return Compose2(f0, Compose9(f1, f2, f3, f4, f5, f6, f7, f8, f9))
 }
 
-// Compose11 is Compose for N=11.
+// Compose11 composes N=11 functions.
 func Compose11[
 	T0 any,
 	T1 any,
@@ -202,7 +202,7 @@ func Compose11[
 	return Compose2(f0, Compose10(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10))
 }
 
-// Compose12 is Compose for N=12.
+// Compose12 composes N=12 functions.
 func Compose12[
 	T0 any,
 	T1 any,
@@ -234,7 +234,7 @@ func Compose12[
 	return Compose2(f0, Compose11(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11))
 }
 
-// Compose13 is Compose for N=13.
+// Compose13 composes N=13 functions.
 func Compose13[
 	T0 any,
 	T1 any,
@@ -268,7 +268,7 @@ func Compose13[
 	return Compose2(f0, Compose12(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12))
 }
 
-// Compose14 is Compose for N=14.
+// Compose14 composes N=14 functions.
 func Compose14[
 	T0 any,
 	T1 any,

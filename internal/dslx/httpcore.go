@@ -175,22 +175,24 @@ func (f *httpRequestFunc) Apply(
 
 	observations = append(observations, maybeTraceToObservations(input.Trace)...)
 
+	state := &HTTPRequestResultState{
+		Address:                  input.Address,
+		Domain:                   input.Domain,
+		HTTPRequest:              req,  // possibly nil
+		HTTPResponse:             resp, // possibly nil
+		HTTPResponseBodySnapshot: body, // possibly nil
+		IDGenerator:              input.IDGenerator,
+		Logger:                   input.Logger,
+		Network:                  input.Network,
+		Trace:                    input.Trace,
+		ZeroTime:                 input.ZeroTime,
+	}
+
 	return &Result[*HTTPRequestResultState]{
 		Error:        err,
 		Observations: observations,
 		Skipped:      false,
-		State: &HTTPRequestResultState{
-			Address:                  input.Address,
-			Domain:                   input.Domain,
-			HTTPRequest:              req,  // possibly nil
-			HTTPResponse:             resp, // possibly nil
-			HTTPResponseBodySnapshot: body, // possibly nil
-			IDGenerator:              input.IDGenerator,
-			Logger:                   input.Logger,
-			Network:                  input.Network,
-			Trace:                    input.Trace,
-			ZeroTime:                 input.ZeroTime,
-		},
+		State:        state,
 	}
 }
 
