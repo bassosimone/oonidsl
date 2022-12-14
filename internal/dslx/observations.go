@@ -29,8 +29,7 @@ type Observations struct {
 }
 
 // ExtractObservations extracts observations from a list of [Result].
-func ExtractObservations[T any](rs ...*Result[T]) []*Observations {
-	out := []*Observations{}
+func ExtractObservations[T any](rs ...*Result[T]) (out []*Observations) {
 	for _, r := range rs {
 		out = append(out, r.Observations...)
 	}
