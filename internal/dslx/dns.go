@@ -154,15 +154,6 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	if err != nil {
-		return &Result[*DNSLookupResultState]{
-			Error:        err,
-			Observations: maybeTraceToObservations(trace),
-			Skipped:      false,
-			State:        nil,
-		}
-	}
-
 	return &Result[*DNSLookupResultState]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
@@ -224,15 +215,6 @@ func (f *dnsLookupUDPFunc) Apply(
 
 	// stop the operation logger
 	ol.Stop(err)
-
-	if err != nil {
-		return &Result[*DNSLookupResultState]{
-			Error:        err,
-			Observations: maybeTraceToObservations(trace),
-			Skipped:      false,
-			State:        nil,
-		}
-	}
 
 	return &Result[*DNSLookupResultState]{
 		Error:        err,
