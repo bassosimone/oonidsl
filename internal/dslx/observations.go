@@ -33,7 +33,7 @@ func ExtractObservations[T any](rs ...*Result[T]) (out []*Observations) {
 	for _, r := range rs {
 		out = append(out, r.Observations...)
 	}
-	return out
+	return
 }
 
 // maybeTraceToObservations returns the observations inside the
