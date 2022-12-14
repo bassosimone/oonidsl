@@ -26,21 +26,22 @@ func (f *httpTransportTCPFunc) Apply(
 		netxlite.NewSingleUseDialer(input.Conn),
 		netxlite.NewNullTLSDialer(),
 	)
+	state := &HTTPTransportState{
+		Address:               input.Address,
+		Domain:                input.Domain,
+		IDGenerator:           input.IDGenerator,
+		Logger:                input.Logger,
+		Network:               input.Network,
+		Scheme:                "http",
+		TLSNegotiatedProtocol: "",
+		Trace:                 input.Trace,
+		Transport:             httpTransport,
+		ZeroTime:              input.ZeroTime,
+	}
 	return &Result[*HTTPTransportState]{
 		Error:        nil,
 		Observations: nil,
 		Skipped:      false,
-		State: &HTTPTransportState{
-			Address:               input.Address,
-			Domain:                input.Domain,
-			IDGenerator:           input.IDGenerator,
-			Logger:                input.Logger,
-			Network:               input.Network,
-			Scheme:                "http",
-			TLSNegotiatedProtocol: "",
-			Trace:                 input.Trace,
-			Transport:             httpTransport,
-			ZeroTime:              input.ZeroTime,
-		},
+		State:        state,
 	}
 }
