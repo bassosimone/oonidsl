@@ -28,28 +28,21 @@ func measureWeb(ctx context.Context, state *measurementState) {
 
 	// construct getaddrinfo resolver
 	getaddrinfoResolver := dslx.DNSLookupGetaddrinfo()
-	udpResolver := dslx.DNSLookupUDP("8.8.8.8:53")
 
 	// perform the DNS lookup
-	dnsResults := dslx.Parallel(
-		ctx,
-		2,
-		dnsInput,
-		getaddrinfoResolver,
-		udpResolver,
-	)
+	dnsResults := getaddrinfoResolver.Apply(ctx, dnsInput)
 
 	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults...)...)
+	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
 
 	// if the lookup has failed mark the whole web measurement as failed
-	if err := dslx.FirstError(dnsResults...); err != nil {
+	if err := dnsResults.Error; err != nil {
 		state.tk.setWebResultFailure(err)
 		return
 	}
 
 	// obtain a unique set of IP addresses w/o bogons inside it
-	ipAddrs := dslx.AddressSet(dnsResults...).RemoveBogons()
+	ipAddrs := dslx.AddressSet(dnsResults).RemoveBogons()
 
 	// if the set is empty we only got bogons
 	if len(ipAddrs.M) <= 0 {
