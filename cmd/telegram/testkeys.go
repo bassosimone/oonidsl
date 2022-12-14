@@ -46,8 +46,8 @@ type testKeys struct {
 	mu sync.Mutex
 }
 
-// mergeObservations merges collected observations into the test keys.
-func (tk *testKeys) mergeObservations(obs ...*dslx.Observations) {
+// MergeObservations implements ObservationsCollector.MergeObservations.
+func (tk *testKeys) MergeObservations(obs ...*dslx.Observations) {
 	defer tk.mu.Unlock()
 	tk.mu.Lock()
 	for _, o := range obs {

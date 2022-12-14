@@ -49,7 +49,7 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
+func TLSHandshake(pool *ConnPool, c ObservationsCollector, options ...TLSHandshakeOption) fx.Func[
 	*TCPConnectResultState, fx.Result[*TLSHandshakeResultState]] {
 	f := &tlsHandshakeFunc{
 		InsecureSkipVerify: false,
@@ -57,6 +57,7 @@ func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
 		Pool:               pool,
 		RootCAs:            netxlite.NewDefaultCertPool(),
 		ServerName:         "",
+		Collector:          c,
 	}
 	for _, option := range options {
 		option(f)
@@ -66,6 +67,9 @@ func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
 
 // tlsHandshakeFunc performs TLS handshakes.
 type tlsHandshakeFunc struct {
+	// Collector is the ObservationsCollector for merging observations
+	Collector ObservationsCollector
+
 	// InsecureSkipVerify allows to skip TLS verification.
 	InsecureSkipVerify bool
 
@@ -123,10 +127,6 @@ func (f *tlsHandshakeFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	if err != nil {
-		return fx.Err[*TLSHandshakeResultState](err)
-	}
-
 	// start preparing the message to emit on the stdout
 	result := &TLSHandshakeResultState{
 		Address:     input.Address,
@@ -139,6 +139,13 @@ func (f *tlsHandshakeFunc) Apply(
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
+
+	f.Collector.MergeObservations(result.Observations()...)
+
+	if err != nil {
+		return fx.Err[*TLSHandshakeResultState](err)
+	}
+
 	return fx.Ok(result)
 }
 

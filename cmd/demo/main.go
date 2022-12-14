@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/apex/log"
@@ -13,17 +14,13 @@ import (
 	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
-func dump(v any) {
-	data, err := json.Marshal(v)
-	runtimex.PanicOnError(err, "json.Marshal failed")
-	fmt.Printf("%s\n", string(data))
-}
-
 func main() {
 	ctx := context.Background()
 
 	zeroTime := time.Now()
 	idGen := &atomicx.Int64{}
+
+	coll := &collector{}
 
 	dnsLookupResults := fx.Parallel(ctx, fx.Parallelism(2),
 		dslx.DNSLookupInput(
@@ -32,12 +29,11 @@ func main() {
 			dslx.DNSLookupOptionLogger(log.Log),
 			dslx.DNSLookupOptionIDGenerator(idGen),
 		),
-		dslx.DNSLookupGetaddrinfo(),
-		dslx.DNSLookupUDP("8.8.8.8:53"),
+		dslx.DNSLookupGetaddrinfo(coll),
+		dslx.DNSLookupUDP("8.8.8.8:53", coll),
 	)
 
-	dnsObservations := dslx.ExtractObservations(dnsLookupResults...)
-	dump(dnsObservations)
+	coll.dump()
 
 	endpoints := dslx.AddressSet(dnsLookupResults...).
 		Add("142.250.184.100").
@@ -56,21 +52,38 @@ func main() {
 
 	tlsHandshakeErrors := &dslx.ErrorLogger{}
 
-	endpointsResults := fx.Map(ctx, fx.Parallelism(2),
+	_ = fx.Map(ctx, fx.Parallelism(2),
 		fx.ComposeResult4(
-			dslx.TCPConnect(connpool),
+			dslx.TCPConnect(connpool, coll),
 			dslx.RecordErrors(
 				tlsHandshakeErrors,
-				dslx.TLSHandshake(connpool),
+				dslx.TLSHandshake(connpool, coll),
 			),
 			dslx.HTTPTransportTLS(),
-			dslx.HTTPRequest(),
+			dslx.HTTPRequest(coll),
 		),
 		endpoints...,
 	)
 
 	log.Infof("%+v", tlsHandshakeErrors.Errors())
 
-	endpointsObservations := dslx.ExtractObservations(endpointsResults...)
-	dump(endpointsObservations)
+	coll.dump()
+}
+
+type collector struct {
+	odump []*dslx.Observations
+	mu    *sync.Mutex
+}
+
+// MergeObservations implements ObservationCollector.MergeObservations.
+func (c *collector) MergeObservations(obs ...*dslx.Observations) {
+	defer c.mu.Unlock()
+	c.mu.Lock()
+	c.odump = append(c.odump, obs...)
+}
+
+func (c *collector) dump() {
+	data, err := json.Marshal(c.odump)
+	runtimex.PanicOnError(err, "json.Marshal failed")
+	fmt.Printf("%s\n", string(data))
 }

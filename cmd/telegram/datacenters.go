@@ -59,25 +59,23 @@ func measureDCs(ctx context.Context, state *measurementState) {
 
 	// construct the function to measure the endpoints
 	function := fx.ComposeResult5(
-		dslx.TCPConnect(connpool),
+		dslx.TCPConnect(connpool, state.tk),
 		tcpConnectSuccessCounter.Func(), // count number of successful TCP connects
-		dslx.HTTPTransportTCP(),
+		dslx.HTTPTransportTCP(state.tk),
 		dslx.HTTPRequest(
+			state.tk,
 			dslx.HTTPRequestOptionMethod("POST"),
 		),
 		httpRoundTripSuccessCounter.Func(), // count number of successful HTTP round trips
 	)
 
 	// measure all the endpoints in parallel and collect the results
-	results := fx.Map(
+	_ = fx.Map(
 		ctx,
 		fx.Parallelism(3),
 		function,
 		endpoints...,
 	)
-
-	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(results...)...)
 
 	// set top-level keys indicating DCs blocking
 	state.tk.setDCBlocking(tcpConnectSuccessCounter, httpRoundTripSuccessCounter)

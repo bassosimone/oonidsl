@@ -128,12 +128,17 @@ func (s *DNSLookupResultState) Observations() []*Observations {
 
 // DNSLookupGetaddrinfo returns a function that resolves a domain name to
 // IP addresses using libc's getaddrinfo function.
-func DNSLookupGetaddrinfo() fx.Func[*DNSLookupInputState, fx.Result[*DNSLookupResultState]] {
-	return &dnsLookupGetaddrinfoFunc{}
+func DNSLookupGetaddrinfo(c ObservationsCollector) fx.Func[*DNSLookupInputState, fx.Result[*DNSLookupResultState]] {
+	return &dnsLookupGetaddrinfoFunc{
+		Collector: c,
+	}
 }
 
 // dnsLookupGetaddrinfoFunc is the function returned by DNSLookupGetaddrinfo.
-type dnsLookupGetaddrinfoFunc struct{}
+type dnsLookupGetaddrinfoFunc struct {
+	// Collector is the ObservationsCollector for merging observations.
+	Collector ObservationsCollector
+}
 
 // Apply implements Func.
 func (f *dnsLookupGetaddrinfoFunc) Apply(
@@ -162,10 +167,6 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	if err != nil {
-		return fx.Err[*DNSLookupResultState](err)
-	}
-
 	result := &DNSLookupResultState{
 		Addresses:   addrs,
 		Domain:      input.Domain,
@@ -174,20 +175,30 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
+
+	f.Collector.MergeObservations(result.Observations()...)
+
+	if err != nil {
+		return fx.Err[*DNSLookupResultState](err)
+	}
+
 	return fx.Ok(result)
 }
 
 // DNSLookupUDP returns a function that resolves a domain name to
 // IP addresses using the given DNS-over-UDP resolver.
-func DNSLookupUDP(resolver string) fx.Func[*DNSLookupInputState, fx.Result[*DNSLookupResultState]] {
+func DNSLookupUDP(resolver string, c ObservationsCollector) fx.Func[*DNSLookupInputState, fx.Result[*DNSLookupResultState]] {
 	return &dnsLookupUDPFunc{
-		Resolver: resolver,
+		Resolver:  resolver,
+		Collector: c,
 	}
 }
 
 // dnsLookupUDPFunc is the type returned by DNSLookupUDP. If you want
 // to init this type manually, make sure you set the MANDATORY fields.
 type dnsLookupUDPFunc struct {
+	// Collector is the ObservationsCollector for merging observations.
+	Collector ObservationsCollector
 	// Resolver is the MANDATORY resolver to use.
 	Resolver string
 }
@@ -224,10 +235,6 @@ func (f *dnsLookupUDPFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	if err != nil {
-		return fx.Err[*DNSLookupResultState](err)
-	}
-
 	result := &DNSLookupResultState{
 		Addresses:   addrs,
 		Domain:      input.Domain,
@@ -236,5 +243,12 @@ func (f *dnsLookupUDPFunc) Apply(
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
+
+	f.Collector.MergeObservations(result.Observations()...)
+
+	if err != nil {
+		return fx.Err[*DNSLookupResultState](err)
+	}
+
 	return fx.Ok(result)
 }
