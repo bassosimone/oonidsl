@@ -28,6 +28,15 @@ type Observations struct {
 	TLSHandshakes []*model.ArchivalTLSOrQUICHandshakeResult `json:"tls_handshakes"`
 }
 
+// ExtractObservations extracts observations from a list of [Result].
+func ExtractObservations[T any](rs ...*Result[T]) []*Observations {
+	out := []*Observations{}
+	for _, r := range rs {
+		out = append(out, r.Observations...)
+	}
+	return out
+}
+
 // maybeTraceToObservations returns the observations inside the
 // trace taking into account the case where trace is nil.
 func maybeTraceToObservations(trace *measurexlite.Trace) (out []*Observations) {
@@ -41,13 +50,4 @@ func maybeTraceToObservations(trace *measurexlite.Trace) (out []*Observations) {
 		})
 	}
 	return
-}
-
-// ExtractObservations extracts observations from a list of [Result].
-func ExtractObservations[T any](rs ...*Result[T]) []*Observations {
-	out := []*Observations{}
-	for _, r := range rs {
-		out = append(out, r.Observations...)
-	}
-	return out
 }
