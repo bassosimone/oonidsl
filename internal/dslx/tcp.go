@@ -55,20 +55,22 @@ func (f *tcpConnectFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
+	state := &TCPConnectResultState{
+		Address:     input.Address,
+		Conn:        conn, // possibly nil
+		Domain:      input.Domain,
+		IDGenerator: input.IDGenerator,
+		Logger:      input.Logger,
+		Network:     input.Network,
+		Trace:       trace,
+		ZeroTime:    input.ZeroTime,
+	}
+
 	return &Result[*TCPConnectResultState]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,
-		State: &TCPConnectResultState{
-			Address:     input.Address,
-			Conn:        conn, // possibly nil
-			Domain:      input.Domain,
-			IDGenerator: input.IDGenerator,
-			Logger:      input.Logger,
-			Network:     input.Network,
-			Trace:       trace,
-			ZeroTime:    input.ZeroTime,
-		},
+		State:        state,
 	}
 }
 
