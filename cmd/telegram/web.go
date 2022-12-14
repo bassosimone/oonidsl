@@ -8,7 +8,6 @@ import (
 	"context"
 
 	"github.com/bassosimone/oonidsl/internal/dslx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
@@ -29,21 +28,28 @@ func measureWeb(ctx context.Context, state *measurementState) {
 
 	// construct getaddrinfo resolver
 	getaddrinfoResolver := dslx.DNSLookupGetaddrinfo()
+	udpResolver := dslx.DNSLookupUDP("8.8.8.8:53")
 
 	// perform the DNS lookup
-	dnsResults := getaddrinfoResolver.Apply(ctx, dnsInput)
+	dnsResults := dslx.Parallel(
+		ctx,
+		2,
+		dnsInput,
+		getaddrinfoResolver,
+		udpResolver,
+	)
 
 	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
+	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults...)...)
 
 	// if the lookup has failed mark the whole web measurement as failed
-	if dnsResults.IsErr() {
-		state.tk.setWebResultFailure(dnsResults.UnwrapErr())
+	if err := dslx.FirstError(dnsResults...); err != nil {
+		state.tk.setWebResultFailure(err)
 		return
 	}
 
 	// obtain a unique set of IP addresses w/o bogons inside it
-	ipAddrs := dslx.AddressSet(dnsResults).RemoveBogons()
+	ipAddrs := dslx.AddressSet(dnsResults...).RemoveBogons()
 
 	// if the set is empty we only got bogons
 	if len(ipAddrs.M) <= 0 {
@@ -69,7 +75,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	successes := dslx.Counter[*dslx.HTTPRequestResultState]()
 
 	// create function for the 443/tcp measurement
-	httpsFunction := fx.ComposeResult6(
+	httpsFunction := dslx.Compose6(
 		dslx.TCPConnect(connpool),
 		dslx.TLSHandshake(connpool),
 		dslx.HTTPTransportTLS(),
@@ -79,9 +85,9 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	)
 
 	// run 443/tcp measurement
-	httpsResults := fx.Map(
+	httpsResults := dslx.Map(
 		ctx,
-		fx.Parallelism(2),
+		dslx.Parallelism(2),
 		httpsFunction,
 		httpsEndpoints...,
 	)

@@ -5,12 +5,11 @@ import (
 	"errors"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 )
 
 // HTTPJustUseOneConn is a filter that allows the first connection that
 // reaches this stage to make progress and stops subsequent ones.
-func HTTPJustUseOneConn() fx.Func[*HTTPTransportState, fx.Result[*HTTPTransportState]] {
+func HTTPJustUseOneConn() Func[*HTTPTransportState, *Result[*HTTPTransportState]] {
 	return &httpJustUseOneConnFunc{
 		counter: &atomicx.Int64{},
 	}
@@ -27,9 +26,11 @@ var ErrHTTPSubsequentConn = errors.New("dslx: subsequent HTTP conn")
 
 // Apply implements Func
 func (f *httpJustUseOneConnFunc) Apply(
-	ctx context.Context, state *HTTPTransportState) fx.Result[*HTTPTransportState] {
-	if f.counter.Add(1) > 1 {
-		return fx.Err[*HTTPTransportState](ErrHTTPSubsequentConn)
+	ctx context.Context, state *HTTPTransportState) *Result[*HTTPTransportState] {
+	return &Result[*HTTPTransportState]{
+		Error:        nil,
+		Observations: nil,
+		Skipped:      f.counter.Add(1) > 1,
+		State:        state,
 	}
-	return fx.Ok(state)
 }

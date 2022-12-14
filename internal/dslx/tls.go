@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
 	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
@@ -49,8 +48,8 @@ func TLSHandshakeOptionServerName(value string) TLSHandshakeOption {
 }
 
 // TLSHandshake returns a function performing TSL handshakes.
-func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) fx.Func[
-	*TCPConnectResultState, fx.Result[*TLSHandshakeResultState]] {
+func TLSHandshake(pool *ConnPool, options ...TLSHandshakeOption) Func[
+	*TCPConnectResultState, *Result[*TLSHandshakeResultState]] {
 	f := &tlsHandshakeFunc{
 		InsecureSkipVerify: false,
 		NextProto:          []string{},
@@ -84,7 +83,7 @@ type tlsHandshakeFunc struct {
 
 // Apply implements Func.
 func (f *tlsHandshakeFunc) Apply(
-	ctx context.Context, input *TCPConnectResultState) fx.Result[*TLSHandshakeResultState] {
+	ctx context.Context, input *TCPConnectResultState) *Result[*TLSHandshakeResultState] {
 	// keep using the same trace
 	trace := input.Trace
 
@@ -123,23 +122,28 @@ func (f *tlsHandshakeFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	if err != nil {
-		return fx.Err[*TLSHandshakeResultState](err)
+	var tlsConn netxlite.TLSConn
+	if conn != nil {
+		tlsConn = conn.(netxlite.TLSConn) // guaranteed to work
 	}
 
 	// start preparing the message to emit on the stdout
-	result := &TLSHandshakeResultState{
-		Address:     input.Address,
-		Conn:        conn.(netxlite.TLSConn), // guaranteed to work
-		Domain:      input.Domain,
-		IDGenerator: input.IDGenerator,
-		Logger:      input.Logger,
-		Network:     input.Network,
-		TLSState:    state,
-		Trace:       trace,
-		ZeroTime:    input.ZeroTime,
+	return &Result[*TLSHandshakeResultState]{
+		Error:        err,
+		Observations: maybeTraceToObservations(trace),
+		Skipped:      false,
+		State: &TLSHandshakeResultState{
+			Address:     input.Address,
+			Conn:        tlsConn, // possibly nil
+			Domain:      input.Domain,
+			IDGenerator: input.IDGenerator,
+			Logger:      input.Logger,
+			Network:     input.Network,
+			TLSState:    state,
+			Trace:       trace,
+			ZeroTime:    input.ZeroTime,
+		},
 	}
-	return fx.Ok(result)
 }
 
 func (f *tlsHandshakeFunc) serverName(input *TCPConnectResultState) string {
@@ -185,11 +189,4 @@ type TLSHandshakeResultState struct {
 
 	// ZeroTime is the MANDATORY zero time of the measurement.
 	ZeroTime time.Time
-}
-
-var _ ObservationsProducer = &TLSHandshakeResultState{}
-
-// Observations implements ObservationsProducer
-func (s *TLSHandshakeResultState) Observations() []*Observations {
-	return maybeTraceToObservations(s.Trace)
 }

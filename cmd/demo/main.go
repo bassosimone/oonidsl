@@ -9,7 +9,6 @@ import (
 	"github.com/apex/log"
 	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/dslx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/runtimex"
 )
 
@@ -25,7 +24,7 @@ func main() {
 	zeroTime := time.Now()
 	idGen := &atomicx.Int64{}
 
-	dnsLookupResults := fx.Parallel(ctx, fx.Parallelism(2),
+	dnsLookupResults := dslx.Parallel(ctx, dslx.Parallelism(2),
 		dslx.DNSLookupInput(
 			dslx.DomainName("www.google.com"),
 			dslx.DNSLookupOptionZeroTime(zeroTime),
@@ -56,8 +55,8 @@ func main() {
 
 	tlsHandshakeErrors := &dslx.ErrorLogger{}
 
-	endpointsResults := fx.Map(ctx, fx.Parallelism(2),
-		fx.ComposeResult4(
+	endpointsResults := dslx.Map(ctx, dslx.Parallelism(2),
+		dslx.Compose4(
 			dslx.TCPConnect(connpool),
 			dslx.RecordErrors(
 				tlsHandshakeErrors,
