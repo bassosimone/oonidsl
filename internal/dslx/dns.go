@@ -154,18 +154,20 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
+	state := &DNSLookupResultState{
+		Addresses:   addrs,
+		Domain:      input.Domain,
+		IDGenerator: input.IDGenerator,
+		Logger:      input.Logger,
+		Trace:       trace,
+		ZeroTime:    input.ZeroTime,
+	}
+
 	return &Result[*DNSLookupResultState]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,
-		State: &DNSLookupResultState{
-			Addresses:   addrs,
-			Domain:      input.Domain,
-			IDGenerator: input.IDGenerator,
-			Logger:      input.Logger,
-			Trace:       trace,
-			ZeroTime:    input.ZeroTime,
-		},
+		State:        state,
 	}
 }
 
@@ -216,17 +218,19 @@ func (f *dnsLookupUDPFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
+	state := &DNSLookupResultState{
+		Addresses:   addrs, // maybe empty
+		Domain:      input.Domain,
+		IDGenerator: input.IDGenerator,
+		Logger:      input.Logger,
+		Trace:       trace,
+		ZeroTime:    input.ZeroTime,
+	}
+
 	return &Result[*DNSLookupResultState]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,
-		State: &DNSLookupResultState{
-			Addresses:   addrs, // maybe empty
-			Domain:      input.Domain,
-			IDGenerator: input.IDGenerator,
-			Logger:      input.Logger,
-			Trace:       trace,
-			ZeroTime:    input.ZeroTime,
-		},
+		State:        state,
 	}
 }
