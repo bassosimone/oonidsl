@@ -221,7 +221,7 @@ func (f *dnsLookupUDPFunc) Apply(
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,
 		State: &DNSLookupResultState{
-			Addresses:   addrs,
+			Addresses:   addrs, // maybe empty
 			Domain:      input.Domain,
 			IDGenerator: input.IDGenerator,
 			Logger:      input.Logger,
