@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
@@ -31,29 +30,28 @@ func measure(
 		"cdn2.signal.org",
 		"sfu.voip.signal.org",
 	}
-	errch := make(chan error, len(domains))
-	wg := &sync.WaitGroup{}
 
+	// run measurements in parallel
+	errch := make(chan error)
 	for _, domain := range domains {
-		wg.Add(1)
-		go measureTarget(ctx, logger, idGen, zeroTime, tk, wg, domain, errch)
+		go measureTarget(ctx, logger, idGen, zeroTime, tk, domain, errch)
 	}
 
-	// wait for measurements to terminate
-	wg.Wait()
+	// collect the result of each measurement
+	var errors []error
+	for range domains {
+		errors = append(errors, <-errch)
+	}
 
-	for {
-		select {
-		case e := <-errch:
-			if e != nil {
-				tk.setResultFailure(e)
-				return ctx.Err()
-			}
-		default:
-			tk.setResultSuccess()
+	// set the final result
+	for _, err := range errors {
+		if err != nil {
+			tk.setResultFailure(err)
 			return ctx.Err()
 		}
 	}
+	tk.setResultSuccess()
+	return ctx.Err()
 }
 
 func measureTarget(
@@ -62,12 +60,11 @@ func measureTarget(
 	idGen *atomicx.Int64,
 	zeroTime time.Time,
 	tk *testKeys,
-	wg *sync.WaitGroup,
 	domain string,
 	errch chan error,
 ) {
-	defer wg.Done()
-	errch <- doMeasureTarget(ctx, logger, idGen, zeroTime, tk, wg, domain)
+	// Note: this pattern ensures we write the output channel exactly once
+	errch <- doMeasureTarget(ctx, logger, idGen, zeroTime, tk, domain)
 }
 
 func doMeasureTarget(
@@ -76,7 +73,6 @@ func doMeasureTarget(
 	idGen *atomicx.Int64,
 	zeroTime time.Time,
 	tk *testKeys,
-	wg *sync.WaitGroup,
 	domain string,
 ) error {
 	// describe the DNS measurement input
@@ -88,6 +84,7 @@ func doMeasureTarget(
 	)
 	// construct getaddrinfo resolver
 	lookup := dslx.DNSLookupGetaddrinfo()
+
 	// run the DNS Lookup
 	dnsResult := lookup.Apply(ctx, dnsInput)
 
