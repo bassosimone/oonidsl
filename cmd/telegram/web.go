@@ -28,10 +28,13 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	)
 
 	// construct getaddrinfo resolver
-	getaddrinfoResolver := dslx.DNSLookupGetaddrinfo(state.tk)
+	getaddrinfoResolver := dslx.DNSLookupGetaddrinfo()
 
 	// perform the DNS lookup
 	dnsResults := getaddrinfoResolver.Apply(ctx, dnsInput)
+
+	// extract and merge observations with the test keys
+	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
 
 	// if the lookup has failed mark the whole web measurement as failed
 	if dnsResults.IsErr() {
@@ -67,11 +70,11 @@ func measureWeb(ctx context.Context, state *measurementState) {
 
 	// create function for the 443/tcp measurement
 	httpsFunction := fx.ComposeResult6(
-		dslx.TCPConnect(connpool, state.tk),
-		dslx.TLSHandshake(connpool, state.tk),
+		dslx.TCPConnect(connpool),
+		dslx.TLSHandshake(connpool),
 		dslx.HTTPTransportTLS(),
 		dslx.HTTPJustUseOneConn(), // stop subsequent connections
-		dslx.HTTPRequest(state.tk),
+		dslx.HTTPRequest(),
 		successes.Func(), // number of times we arrive here
 	)
 
@@ -82,6 +85,9 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		httpsFunction,
 		httpsEndpoints...,
 	)
+
+	// extract and merge observations with the test keys
+	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// if we saw successes, then it's not blocked
 	if successes.Value() > 0 {

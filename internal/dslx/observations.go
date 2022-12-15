@@ -63,11 +63,3 @@ func maybeTraceToObservations(trace *measurexlite.Trace) (out []*Observations) {
 	}
 	return
 }
-
-// ObservationsCollector is anything where we can store observations, e.g. TestKeys.
-type ObservationsCollector interface {
-	// MergeObservations merges collected observations into the test keys.
-	// When implementing MergeObservations, the programmer is responsible to make this method
-	// go routine safe.
-	MergeObservations(obs ...*Observations)
-}

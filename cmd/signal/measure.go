@@ -69,9 +69,12 @@ func doMeasureTarget(
 		dslx.DNSLookupOptionZeroTime(state.zeroTime),
 	)
 	// construct getaddrinfo resolver
-	lookup := dslx.DNSLookupGetaddrinfo(state.tk)
+	lookup := dslx.DNSLookupGetaddrinfo()
 	// run the DNS Lookup
 	dnsResult := lookup.Apply(ctx, dnsInput)
+
+	// extract and merge observations with the test keys
+	state.tk.mergeObservations(dslx.ExtractObservations(dnsResult)...)
 
 	// if the lookup has failed we return
 	if dnsResult.IsErr() {
@@ -106,15 +109,14 @@ func doMeasureTarget(
 
 	// create function for the 443/tcp/tls/https measurement
 	httpsFunction := fx.ComposeResult6(
-		dslx.TCPConnect(connpool, state.tk),
+		dslx.TCPConnect(connpool),
 		dslx.TLSHandshake(
 			connpool,
-			state.tk,
 			dslx.TLSHandshakeOptionRootCAs(certPool),
 		),
 		dslx.HTTPTransportTLS(),
 		dslx.HTTPJustUseOneConn(), // TODO: do we want this?
-		dslx.HTTPRequest(state.tk),
+		dslx.HTTPRequest(),
 		successes.Func(), // number of times we arrive here
 	)
 
@@ -125,6 +127,9 @@ func doMeasureTarget(
 		httpsFunction,
 		endpoints...,
 	)
+
+	// extract and merge observations with the test keys
+	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// if we saw successes, then this domain is not blocked
 	if successes.Value() > 0 {

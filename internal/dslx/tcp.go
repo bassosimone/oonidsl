@@ -16,19 +16,14 @@ import (
 )
 
 // TCPConnect returns a function that establishes TCP connections.
-func TCPConnect(pool *ConnPool, c ObservationsCollector) fx.Func[*EndpointState, fx.Result[*TCPConnectResultState]] {
-	f := &tcpConnectFunc{
-		Collector: c,
-		p:         pool,
-	}
+func TCPConnect(pool *ConnPool) fx.Func[*EndpointState, fx.Result[*TCPConnectResultState]] {
+	f := &tcpConnectFunc{pool}
 	return f
 }
 
 // tcpConnectFunc is a function that establishes TCP connections.
 type tcpConnectFunc struct {
-	// Collector is the ObservationsCollector for merging observations.
-	Collector ObservationsCollector
-	p         *ConnPool
+	p *ConnPool
 }
 
 // Apply applies the function to its arguments.
@@ -61,6 +56,10 @@ func (f *tcpConnectFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
+	if err != nil {
+		return fx.Err[*TCPConnectResultState](err)
+	}
+
 	result := &TCPConnectResultState{
 		Address:     input.Address,
 		Conn:        conn,
@@ -70,12 +69,6 @@ func (f *tcpConnectFunc) Apply(
 		Network:     input.Network,
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
-	}
-
-	f.Collector.MergeObservations(result.Observations()...)
-
-	if err != nil {
-		return fx.Err[*TCPConnectResultState](err)
 	}
 	return fx.Ok(result)
 }

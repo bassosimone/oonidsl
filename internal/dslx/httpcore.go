@@ -109,11 +109,9 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 }
 
 // HTTPRequest issues an HTTP request using a transport and returns a response.
-func HTTPRequest(c ObservationsCollector, options ...HTTPRequestOption) fx.Func[
+func HTTPRequest(options ...HTTPRequestOption) fx.Func[
 	*HTTPTransportState, fx.Result[*HTTPRequestResultState]] {
-	f := &httpRequestFunc{
-		Collector: c,
-	}
+	f := &httpRequestFunc{}
 	for _, option := range options {
 		option(f)
 	}
@@ -127,9 +125,6 @@ type httpRequestFunc struct {
 
 	// AcceptLanguage is the OPTIONAL accept-language header.
 	AcceptLanguage string
-
-	// Collector is the ObservationsCollector for merging observations.
-	Collector ObservationsCollector
 
 	// Host is the OPTIONAL host header.
 	Host string
@@ -181,6 +176,10 @@ func (f *httpRequestFunc) Apply(
 		ol.Stop(err)
 	}
 
+	if err != nil {
+		return fx.Err[*HTTPRequestResultState](err)
+	}
+
 	result := &HTTPRequestResultState{
 		Address:                  input.Address,
 		Domain:                   input.Domain,
@@ -196,11 +195,6 @@ func (f *httpRequestFunc) Apply(
 		ZeroTime:                 input.ZeroTime,
 	}
 
-	f.Collector.MergeObservations(result.Observations()...)
-
-	if err != nil {
-		return fx.Err[*HTTPRequestResultState](err)
-	}
 	return fx.Ok(result)
 }
 
