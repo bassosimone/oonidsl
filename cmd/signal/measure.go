@@ -6,13 +6,23 @@ package main
 
 import (
 	"context"
+	"sync"
+	"time"
 
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/dslx"
+	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // measure is the top-level measurement algorithm.
-func measure(ctx context.Context, state *measurementState) error {
+func measure(
+	ctx context.Context,
+	logger model.Logger,
+	idGen *atomicx.Int64,
+	zeroTime time.Time,
+	tk *testKeys,
+) error {
 	domains := []string{
 		"textsecure-service.whispersystems.org",
 		"storage.signal.org",
@@ -22,24 +32,25 @@ func measure(ctx context.Context, state *measurementState) error {
 		"sfu.voip.signal.org",
 	}
 	errch := make(chan error, len(domains))
+	wg := &sync.WaitGroup{}
 
 	for _, domain := range domains {
-		state.wg.Add(1)
-		go measureTarget(ctx, state, domain, errch)
+		wg.Add(1)
+		go measureTarget(ctx, logger, idGen, zeroTime, tk, wg, domain, errch)
 	}
 
 	// wait for measurements to terminate
-	state.wg.Wait()
+	wg.Wait()
 
 	for {
 		select {
 		case e := <-errch:
 			if e != nil {
-				state.tk.setResultFailure(e)
+				tk.setResultFailure(e)
 				return ctx.Err()
 			}
 		default:
-			state.tk.setResultSuccess()
+			tk.setResultSuccess()
 			return ctx.Err()
 		}
 	}
@@ -47,25 +58,33 @@ func measure(ctx context.Context, state *measurementState) error {
 
 func measureTarget(
 	ctx context.Context,
-	state *measurementState,
+	logger model.Logger,
+	idGen *atomicx.Int64,
+	zeroTime time.Time,
+	tk *testKeys,
+	wg *sync.WaitGroup,
 	domain string,
 	errch chan error,
 ) {
-	defer state.wg.Done()
-	errch <- doMeasureTarget(ctx, state, domain)
+	defer wg.Done()
+	errch <- doMeasureTarget(ctx, logger, idGen, zeroTime, tk, wg, domain)
 }
 
 func doMeasureTarget(
 	ctx context.Context,
-	state *measurementState,
+	logger model.Logger,
+	idGen *atomicx.Int64,
+	zeroTime time.Time,
+	tk *testKeys,
+	wg *sync.WaitGroup,
 	domain string,
 ) error {
 	// describe the DNS measurement input
 	dnsInput := dslx.DNSLookupInput(
 		dslx.DomainName(domain),
-		dslx.DNSLookupOptionIDGenerator(state.idGen), // do I have to increment this?
-		dslx.DNSLookupOptionLogger(state.logger),
-		dslx.DNSLookupOptionZeroTime(state.zeroTime),
+		dslx.DNSLookupOptionIDGenerator(idGen),
+		dslx.DNSLookupOptionLogger(logger),
+		dslx.DNSLookupOptionZeroTime(zeroTime),
 	)
 	// construct getaddrinfo resolver
 	lookup := dslx.DNSLookupGetaddrinfo()
@@ -73,7 +92,7 @@ func doMeasureTarget(
 	dnsResult := lookup.Apply(ctx, dnsInput)
 
 	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(dnsResult)...)
+	tk.mergeObservations(dslx.ExtractObservations(dnsResult)...)
 
 	// if the lookup has failed we return
 	if dnsResult.Error != nil {
@@ -88,9 +107,9 @@ func doMeasureTarget(
 		dslx.EndpointNetwork("tcp"),
 		dslx.EndpointPort(443),
 		dslx.EndpointOptionDomain(domain),
-		dslx.EndpointOptionIDGenerator(state.idGen),
-		dslx.EndpointOptionLogger(state.logger),
-		dslx.EndpointOptionZeroTime(state.zeroTime),
+		dslx.EndpointOptionIDGenerator(idGen),
+		dslx.EndpointOptionLogger(logger),
+		dslx.EndpointOptionZeroTime(zeroTime),
 	)
 
 	// count the number of successes
@@ -128,7 +147,7 @@ func doMeasureTarget(
 	)
 
 	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
+	tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// if we saw successes, then this domain is not blocked
 	if successes.Value() > 0 {
