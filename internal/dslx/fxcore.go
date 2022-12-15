@@ -18,9 +18,9 @@ type Func[A, B any] interface {
 	Apply(ctx context.Context, a A) B
 }
 
-// Result is the result of an operation implemented by this package
-// such as [TCPConnect], [TLSHandshake], etc.
-type Result[State any] struct {
+// Maybe is the result of an operation implemented by this package
+// that may fail such as [TCPConnect] or [TLSHandshake].
+type Maybe[State any] struct {
 	// Error is either the error that occurred or nil.
 	Error error
 
@@ -31,12 +31,13 @@ type Result[State any] struct {
 	// that subsequent steps should be skipped.
 	Skipped bool
 
-	// State contains state passed between function calls.
+	// State contains state passed between function calls which may
+	// not exist if Error is not nil of Skipped is true.
 	State State
 }
 
 // Compose2 composes two operations such as [TCPConnect] and [TLSHandshake].
-func Compose2[A, B, C any](f Func[A, *Result[B]], g Func[B, *Result[C]]) Func[A, *Result[C]] {
+func Compose2[A, B, C any](f Func[A, *Maybe[B]], g Func[B, *Maybe[C]]) Func[A, *Maybe[C]] {
 	return &compose2Func[A, B, C]{
 		f: f,
 		g: g,
@@ -45,16 +46,16 @@ func Compose2[A, B, C any](f Func[A, *Result[B]], g Func[B, *Result[C]]) Func[A,
 
 // compose2Func is the type returned by [Compose2].
 type compose2Func[A, B, C any] struct {
-	f Func[A, *Result[B]]
-	g Func[B, *Result[C]]
+	f Func[A, *Maybe[B]]
+	g Func[B, *Maybe[C]]
 }
 
 // Apply implements Func
-func (h *compose2Func[A, B, C]) Apply(ctx context.Context, a A) *Result[C] {
+func (h *compose2Func[A, B, C]) Apply(ctx context.Context, a A) *Maybe[C] {
 	mb := h.f.Apply(ctx, a)
 	runtimex.Assert(mb != nil, "h.f.Apply returned a nil pointer")
 	if mb.Skipped || mb.Error != nil {
-		return &Result[C]{
+		return &Maybe[C]{
 			Error:        mb.Error,
 			Observations: mb.Observations,
 			Skipped:      mb.Skipped,
@@ -63,7 +64,7 @@ func (h *compose2Func[A, B, C]) Apply(ctx context.Context, a A) *Result[C] {
 	}
 	mc := h.g.Apply(ctx, mb.State)
 	runtimex.Assert(mc != nil, "h.g.Apply returned a nil pointer")
-	return &Result[C]{
+	return &Maybe[C]{
 		Error:        mc.Error,
 		Observations: append(mb.Observations, mc.Observations...), // merge observations
 		Skipped:      mc.Skipped,
@@ -77,7 +78,7 @@ func Counter[T any]() *CounterState[T] {
 }
 
 // CounterState allows to count how many times
-// a Func[T, *Result[T]] is invoked.
+// a Func[T, *Maybe[T]] is invoked.
 type CounterState[T any] struct {
 	n atomicx.Int64
 }
@@ -87,8 +88,8 @@ func (c *CounterState[T]) Value() int64 {
 	return c.n.Load()
 }
 
-// Func returns a Func[T, *Result[T]] that updates the counter.
-func (c *CounterState[T]) Func() Func[T, *Result[T]] {
+// Func returns a Func[T, *Maybe[T]] that updates the counter.
+func (c *CounterState[T]) Func() Func[T, *Maybe[T]] {
 	return &counterFunc[T]{c}
 }
 
@@ -98,9 +99,9 @@ type counterFunc[T any] struct {
 }
 
 // Apply implements Func.
-func (c *counterFunc[T]) Apply(ctx context.Context, value T) *Result[T] {
+func (c *counterFunc[T]) Apply(ctx context.Context, value T) *Maybe[T] {
 	c.c.n.Add(1)
-	return &Result[T]{
+	return &Maybe[T]{
 		Error:        nil,
 		Observations: nil,
 		Skipped:      false,
@@ -133,7 +134,7 @@ func (e *ErrorLogger) Record(err error) {
 }
 
 // RecordErrors records errors returned by fx.
-func RecordErrors[A, B any](logger *ErrorLogger, fx Func[A, *Result[B]]) Func[A, *Result[B]] {
+func RecordErrors[A, B any](logger *ErrorLogger, fx Func[A, *Maybe[B]]) Func[A, *Maybe[B]] {
 	return &recordErrorsFunc[A, B]{
 		fx: fx,
 		p:  logger,
@@ -142,12 +143,12 @@ func RecordErrors[A, B any](logger *ErrorLogger, fx Func[A, *Result[B]]) Func[A,
 
 // recordErrorsFunc is the type returned by ErrorLogger.Wrap.
 type recordErrorsFunc[A, B any] struct {
-	fx Func[A, *Result[B]]
+	fx Func[A, *Maybe[B]]
 	p  *ErrorLogger
 }
 
 // Apply implements Func.
-func (elw *recordErrorsFunc[A, B]) Apply(ctx context.Context, a A) *Result[B] {
+func (elw *recordErrorsFunc[A, B]) Apply(ctx context.Context, a A) *Maybe[B] {
 	r := elw.fx.Apply(ctx, a)
 	if r.Error != nil {
 		elw.p.Record(r.Error)
@@ -156,8 +157,8 @@ func (elw *recordErrorsFunc[A, B]) Apply(ctx context.Context, a A) *Result[B] {
 }
 
 // FirstErrorExcludingBrokenIPv6Errors returns the first error in a list of
-// *Result[T] excluding errors known to be linked with IPv6 issues.
-func FirstErrorExcludingBrokenIPv6Errors[T any](entries ...*Result[T]) error {
+// *Maybe[T] excluding errors known to be linked with IPv6 issues.
+func FirstErrorExcludingBrokenIPv6Errors[T any](entries ...*Maybe[T]) error {
 	for _, entry := range entries {
 		if entry.Error != nil {
 			continue
@@ -174,8 +175,8 @@ func FirstErrorExcludingBrokenIPv6Errors[T any](entries ...*Result[T]) error {
 	return nil
 }
 
-// FirstError returns the first error in a list of *Result[T].
-func FirstError[T any](entries ...*Result[T]) error {
+// FirstError returns the first error in a list of *Maybe[T].
+func FirstError[T any](entries ...*Maybe[T]) error {
 	for _, entry := range entries {
 		if entry.Error != nil {
 			continue

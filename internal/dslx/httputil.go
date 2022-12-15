@@ -9,7 +9,7 @@ import (
 
 // HTTPJustUseOneConn is a filter that allows the first connection that
 // reaches this stage to make progress and stops subsequent ones.
-func HTTPJustUseOneConn() Func[*HTTPTransportState, *Result[*HTTPTransportState]] {
+func HTTPJustUseOneConn() Func[*HTTPTransport, *Maybe[*HTTPTransport]] {
 	return &httpJustUseOneConnFunc{
 		counter: &atomicx.Int64{},
 	}
@@ -26,8 +26,8 @@ var ErrHTTPSubsequentConn = errors.New("dslx: subsequent HTTP conn")
 
 // Apply implements Func
 func (f *httpJustUseOneConnFunc) Apply(
-	ctx context.Context, state *HTTPTransportState) *Result[*HTTPTransportState] {
-	return &Result[*HTTPTransportState]{
+	ctx context.Context, state *HTTPTransport) *Maybe[*HTTPTransport] {
+	return &Maybe[*HTTPTransport]{
 		Error:        nil,
 		Observations: nil,
 		Skipped:      f.counter.Add(1) > 1,

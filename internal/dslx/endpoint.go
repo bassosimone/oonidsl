@@ -19,10 +19,10 @@ type (
 	EndpointAddress string
 )
 
-// EndpointState is the state necessary for measuring a single endpoint. You
-// should construct from an AddressSetState. Otherwise, in case of manual initialization,
-// make sure you initialize all the fields marked as MANDATORY.
-type EndpointState struct {
+// Endpoint is a network endpoint along with configuration for measuring it. You
+// should construct from an AddressSet or using NewEndpoint. Otherwise, make sure
+// you initialize all the fields marked as MANDATORY.
+type Endpoint struct {
 	// Address is the MANDATORY endpoint address.
 	Address string
 
@@ -43,50 +43,50 @@ type EndpointState struct {
 }
 
 // EndpointOption is an option you can use to construct EndpointState.
-type EndpointOption func(*EndpointState)
+type EndpointOption func(*Endpoint)
 
 // EndpointOptionDomain allows to set the domain.
 func EndpointOptionDomain(value string) EndpointOption {
-	return func(es *EndpointState) {
+	return func(es *Endpoint) {
 		es.Domain = value
 	}
 }
 
 // EndpointOptionIDGenerator allows to set the ID generator.
 func EndpointOptionIDGenerator(value *atomicx.Int64) EndpointOption {
-	return func(es *EndpointState) {
+	return func(es *Endpoint) {
 		es.IDGenerator = value
 	}
 }
 
 // EndpointOptionLogger allows to set the logger.
 func EndpointOptionLogger(value model.Logger) EndpointOption {
-	return func(es *EndpointState) {
+	return func(es *Endpoint) {
 		es.Logger = value
 	}
 }
 
 // EndpointOptionZeroTime allows to set the zero time.
 func EndpointOptionZeroTime(value time.Time) EndpointOption {
-	return func(es *EndpointState) {
+	return func(es *Endpoint) {
 		es.ZeroTime = value
 	}
 }
 
-// Endpoint creates state for measuring a network Endpoint (i.e., a three
-// tuple composed of a network protocol, an IP address, and a port).
+// NewEndpoint creates a new network endpoint (i.e., a three tuple composed
+// of a network protocol, an IP address, and a port).
 //
 // Arguments:
 //
 // - network is either "tcp" or "udp";
 //
-// - address is the Endpoint address represented as an IP address followed by ":"
+// - address is the NewEndpoint address represented as an IP address followed by ":"
 // followed by a port. IPv6 addresses must be quoted (e.g., "[::1]:80");
 //
 // - options contains additional options.
-func Endpoint(
-	network EndpointNetwork, address EndpointAddress, options ...EndpointOption) *EndpointState {
-	epnt := &EndpointState{
+func NewEndpoint(
+	network EndpointNetwork, address EndpointAddress, options ...EndpointOption) *Endpoint {
+	epnt := &Endpoint{
 		Address:     string(address),
 		Domain:      "",
 		IDGenerator: &atomicx.Int64{},

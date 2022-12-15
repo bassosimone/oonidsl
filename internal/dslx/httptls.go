@@ -11,12 +11,12 @@ import (
 )
 
 // HTTPRequestOverTLS returns a Func that issues HTTP requests over TLS.
-func HTTPRequestOverTLS(options ...HTTPRequestOption) Func[*TLSHandshakeResultState, *Result[*HTTPRequestResultState]] {
+func HTTPRequestOverTLS(options ...HTTPRequestOption) Func[*TLSConnection, *Maybe[*HTTPResponse]] {
 	return Compose2(HTTPTransportTLS(), HTTPRequest(options...))
 }
 
 // HTTPTransportTLS converts a TLS connection into an HTTP transport.
-func HTTPTransportTLS() Func[*TLSHandshakeResultState, *Result[*HTTPTransportState]] {
+func HTTPTransportTLS() Func[*TLSConnection, *Maybe[*HTTPTransport]] {
 	return &httpTransportTLSFunc{}
 }
 
@@ -25,13 +25,13 @@ type httpTransportTLSFunc struct{}
 
 // Apply implements Func.
 func (f *httpTransportTLSFunc) Apply(
-	ctx context.Context, input *TLSHandshakeResultState) *Result[*HTTPTransportState] {
+	ctx context.Context, input *TLSConnection) *Maybe[*HTTPTransport] {
 	httpTransport := netxlite.NewHTTPTransport(
 		input.Logger,
 		netxlite.NewNullDialer(),
 		netxlite.NewSingleUseTLSDialer(input.Conn),
 	)
-	state := &HTTPTransportState{
+	state := &HTTPTransport{
 		Address:               input.Address,
 		Domain:                input.Domain,
 		IDGenerator:           input.IDGenerator,
@@ -43,7 +43,7 @@ func (f *httpTransportTLSFunc) Apply(
 		Transport:             httpTransport,
 		ZeroTime:              input.ZeroTime,
 	}
-	return &Result[*HTTPTransportState]{
+	return &Maybe[*HTTPTransport]{
 		Error:        nil,
 		Observations: nil,
 		Skipped:      false,

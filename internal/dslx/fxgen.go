@@ -11,10 +11,10 @@ func Compose3[
 	T2 any,
 	T3 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-) Func[T0, *Result[T3]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+) Func[T0, *Maybe[T3]] {
 	return Compose2(f0, Compose2(f1, f2))
 }
 
@@ -26,11 +26,11 @@ func Compose4[
 	T3 any,
 	T4 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-) Func[T0, *Result[T4]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+) Func[T0, *Maybe[T4]] {
 	return Compose2(f0, Compose3(f1, f2, f3))
 }
 
@@ -43,12 +43,12 @@ func Compose5[
 	T4 any,
 	T5 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-) Func[T0, *Result[T5]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+) Func[T0, *Maybe[T5]] {
 	return Compose2(f0, Compose4(f1, f2, f3, f4))
 }
 
@@ -62,13 +62,13 @@ func Compose6[
 	T5 any,
 	T6 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-) Func[T0, *Result[T6]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+) Func[T0, *Maybe[T6]] {
 	return Compose2(f0, Compose5(f1, f2, f3, f4, f5))
 }
 
@@ -83,14 +83,14 @@ func Compose7[
 	T6 any,
 	T7 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-) Func[T0, *Result[T7]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+) Func[T0, *Maybe[T7]] {
 	return Compose2(f0, Compose6(f1, f2, f3, f4, f5, f6))
 }
 
@@ -106,15 +106,15 @@ func Compose8[
 	T7 any,
 	T8 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-) Func[T0, *Result[T8]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+) Func[T0, *Maybe[T8]] {
 	return Compose2(f0, Compose7(f1, f2, f3, f4, f5, f6, f7))
 }
 
@@ -131,16 +131,16 @@ func Compose9[
 	T8 any,
 	T9 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-	f8 Func[T8, *Result[T9]],
-) Func[T0, *Result[T9]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+	f8 Func[T8, *Maybe[T9]],
+) Func[T0, *Maybe[T9]] {
 	return Compose2(f0, Compose8(f1, f2, f3, f4, f5, f6, f7, f8))
 }
 
@@ -158,17 +158,17 @@ func Compose10[
 	T9 any,
 	T10 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-	f8 Func[T8, *Result[T9]],
-	f9 Func[T9, *Result[T10]],
-) Func[T0, *Result[T10]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+	f8 Func[T8, *Maybe[T9]],
+	f9 Func[T9, *Maybe[T10]],
+) Func[T0, *Maybe[T10]] {
 	return Compose2(f0, Compose9(f1, f2, f3, f4, f5, f6, f7, f8, f9))
 }
 
@@ -187,18 +187,18 @@ func Compose11[
 	T10 any,
 	T11 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-	f8 Func[T8, *Result[T9]],
-	f9 Func[T9, *Result[T10]],
-	f10 Func[T10, *Result[T11]],
-) Func[T0, *Result[T11]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+	f8 Func[T8, *Maybe[T9]],
+	f9 Func[T9, *Maybe[T10]],
+	f10 Func[T10, *Maybe[T11]],
+) Func[T0, *Maybe[T11]] {
 	return Compose2(f0, Compose10(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10))
 }
 
@@ -218,19 +218,19 @@ func Compose12[
 	T11 any,
 	T12 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-	f8 Func[T8, *Result[T9]],
-	f9 Func[T9, *Result[T10]],
-	f10 Func[T10, *Result[T11]],
-	f11 Func[T11, *Result[T12]],
-) Func[T0, *Result[T12]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+	f8 Func[T8, *Maybe[T9]],
+	f9 Func[T9, *Maybe[T10]],
+	f10 Func[T10, *Maybe[T11]],
+	f11 Func[T11, *Maybe[T12]],
+) Func[T0, *Maybe[T12]] {
 	return Compose2(f0, Compose11(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11))
 }
 
@@ -251,20 +251,20 @@ func Compose13[
 	T12 any,
 	T13 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-	f8 Func[T8, *Result[T9]],
-	f9 Func[T9, *Result[T10]],
-	f10 Func[T10, *Result[T11]],
-	f11 Func[T11, *Result[T12]],
-	f12 Func[T12, *Result[T13]],
-) Func[T0, *Result[T13]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+	f8 Func[T8, *Maybe[T9]],
+	f9 Func[T9, *Maybe[T10]],
+	f10 Func[T10, *Maybe[T11]],
+	f11 Func[T11, *Maybe[T12]],
+	f12 Func[T12, *Maybe[T13]],
+) Func[T0, *Maybe[T13]] {
 	return Compose2(f0, Compose12(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12))
 }
 
@@ -286,20 +286,20 @@ func Compose14[
 	T13 any,
 	T14 any,
 ](
-	f0 Func[T0, *Result[T1]],
-	f1 Func[T1, *Result[T2]],
-	f2 Func[T2, *Result[T3]],
-	f3 Func[T3, *Result[T4]],
-	f4 Func[T4, *Result[T5]],
-	f5 Func[T5, *Result[T6]],
-	f6 Func[T6, *Result[T7]],
-	f7 Func[T7, *Result[T8]],
-	f8 Func[T8, *Result[T9]],
-	f9 Func[T9, *Result[T10]],
-	f10 Func[T10, *Result[T11]],
-	f11 Func[T11, *Result[T12]],
-	f12 Func[T12, *Result[T13]],
-	f13 Func[T13, *Result[T14]],
-) Func[T0, *Result[T14]] {
+	f0 Func[T0, *Maybe[T1]],
+	f1 Func[T1, *Maybe[T2]],
+	f2 Func[T2, *Maybe[T3]],
+	f3 Func[T3, *Maybe[T4]],
+	f4 Func[T4, *Maybe[T5]],
+	f5 Func[T5, *Maybe[T6]],
+	f6 Func[T6, *Maybe[T7]],
+	f7 Func[T7, *Maybe[T8]],
+	f8 Func[T8, *Maybe[T9]],
+	f9 Func[T9, *Maybe[T10]],
+	f10 Func[T10, *Maybe[T11]],
+	f11 Func[T11, *Maybe[T12]],
+	f12 Func[T12, *Maybe[T13]],
+	f13 Func[T13, *Maybe[T14]],
+) Func[T0, *Maybe[T14]] {
 	return Compose2(f0, Compose13(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13))
 }

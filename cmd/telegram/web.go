@@ -30,7 +30,7 @@ func measureWeb(
 	defer wg.Done()
 
 	// describe the DNS measurement input
-	dnsInput := dslx.DNSLookupInput(
+	dnsInput := dslx.NewDNSLookupInput(
 		dslx.DomainName(webDomain),
 		dslx.DNSLookupOptionIDGenerator(idGen),
 		dslx.DNSLookupOptionLogger(logger),
@@ -53,7 +53,7 @@ func measureWeb(
 	}
 
 	// obtain a unique set of IP addresses w/o bogons inside it
-	ipAddrs := dslx.AddressSet(dnsResults).RemoveBogons()
+	ipAddrs := dslx.NewAddressSet(dnsResults).RemoveBogons()
 
 	// if the set is empty we only got bogons
 	if len(ipAddrs.M) <= 0 {
@@ -76,7 +76,7 @@ func measureWeb(
 	)
 
 	// count the number of successes
-	successes := dslx.Counter[*dslx.HTTPRequestResultState]()
+	successes := dslx.Counter[*dslx.HTTPResponse]()
 
 	// create function for the 443/tcp measurement
 	httpsFunction := dslx.Compose6(

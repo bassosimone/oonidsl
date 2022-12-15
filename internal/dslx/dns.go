@@ -17,38 +17,38 @@ import (
 // DomainName is a domain name to resolve.
 type DomainName string
 
-// DNSLookupOption is an option you can pass to DNSLookupInput.
-type DNSLookupOption func(*DNSLookupInputState)
+// DNSLookupOption is an option you can pass to NewDNSLookupInput.
+type DNSLookupOption func(*DomainToResolve)
 
 // DNSLookupOptionIDGenerator configures a specific ID generator.
-// See DNSLookupInputState docs for additional information.
+// See DNSLookupInput docs for more information.
 func DNSLookupOptionIDGenerator(value *atomicx.Int64) DNSLookupOption {
-	return func(dis *DNSLookupInputState) {
+	return func(dis *DomainToResolve) {
 		dis.IDGenerator = value
 	}
 }
 
 // DNSLookupOptionLogger configures a specific logger.
-// See DNSLookupInputState docs for additional information.
+// See DNSLookupInput docs for more information.
 func DNSLookupOptionLogger(value model.Logger) DNSLookupOption {
-	return func(dis *DNSLookupInputState) {
+	return func(dis *DomainToResolve) {
 		dis.Logger = value
 	}
 }
 
 // DNSLookupOptionZeroTime configures the measurement's zero time.
-// See DNSLookupInputState docs for additional information.
+// See DNSLookupInput docs for more information.
 func DNSLookupOptionZeroTime(value time.Time) DNSLookupOption {
-	return func(dis *DNSLookupInputState) {
+	return func(dis *DomainToResolve) {
 		dis.ZeroTime = value
 	}
 }
 
-// DNSLookupInput creates state for resolving a domain name. The only mandatory
-// argument is obviously the domain name to resolve. You can also supply optional
+// NewDNSLookupInput creates input for performing DNS lookups. The only mandatory
+// argument is the domain name to resolve. You can also supply optional
 // values by passing options to this function.
-func DNSLookupInput(domain DomainName, options ...DNSLookupOption) *DNSLookupInputState {
-	state := &DNSLookupInputState{
+func NewDNSLookupInput(domain DomainName, options ...DNSLookupOption) *DomainToResolve {
+	state := &DomainToResolve{
 		Domain:      string(domain),
 		IDGenerator: &atomicx.Int64{},
 		Logger:      model.DiscardLogger,
@@ -60,67 +60,65 @@ func DNSLookupInput(domain DomainName, options ...DNSLookupOption) *DNSLookupInp
 	return state
 }
 
-// DNSLookupInputState contains state for resolving a domain name.
+// DomainToResolve is the input for DNS lookup functions.
 //
-// You should construct this type using the DNSLookupInput constructor
+// You should construct this type using the NewDNSLookupInput constructor
 // as well as DNSLookupOption options to fill optional values. If you
 // want to construct this type manually, please make sure you initialize
 // all the variables marked as MANDATORY.
-type DNSLookupInputState struct {
+type DomainToResolve struct {
 	// Domain is the MANDATORY domain name to lookup.
 	Domain string
 
 	// IDGenerator is the MANDATORY ID generator. We will use this field
 	// to assign unique IDs to distinct sub-measurements. The default
-	// construction implemented by DNSLookupInput creates a new generator
+	// construction implemented by NewDNSLookupInput creates a new generator
 	// that starts counting from zero, leading to the first trace having
 	// one as its index.
 	IDGenerator *atomicx.Int64
 
 	// Logger is the MANDATORY logger to use. The default construction
-	// implemented by DNSLookupInput uses model.DiscardLogger.
+	// implemented by NewDNSLookupInput uses model.DiscardLogger.
 	Logger model.Logger
 
 	// ZeroTime is the MANDATORY zero time of the measurement. We will
 	// use this field as the zero value to compute relative elapsed times
 	// when generating measurements. The default construction by
-	// DNSLookupInit initializes this field with the current time.
+	// NewDNSLookupInit initializes this field with the current time.
 	ZeroTime time.Time
 }
 
-// DNSLookupResultState is the state returned by a DNS lookup. This struct
-// will obviously contain the results of the DNS lookup as well as state
-// inherited from the DNSLookupInputState. If you want to initialize this
-// struct manually, make sure you follow specific instructions for each field.
-type DNSLookupResultState struct {
+// ResolvedAddresses is the contains the results of DNS lookups. To initialize
+// this struct manually, follow specific instructions for each field.
+type ResolvedAddresses struct {
 	// Addresses contains the nonempty resolved addresses.
 	Addresses []string
 
 	// Domain is the domain we resolved. We inherit this field
-	// from the value inside the DNSLookupInputState.
+	// from the value inside the DNSLookupInput.
 	Domain string
 
 	// IDGenerator is the ID generator. We inherit this field
-	// from the value inside the DNSLookupInputState.
+	// from the value inside the DNSLookupInput.
 	IDGenerator *atomicx.Int64
 
 	// Logger is the logger to use. We inherit this field
-	// from the value inside the DNSLookupInputState.
+	// from the value inside the DNSLookupInput.
 	Logger model.Logger
 
 	// Trace is the trace we're currently using. This struct is
 	// created by the various Apply functions using values inside
-	// the DNSLookupInputState to initialize the Trace.
+	// the DNSLookupInput to initialize the Trace.
 	Trace *measurexlite.Trace
 
 	// ZeroTime is the zero time of the measurement. We inherit this field
-	// from the value inside the DNSLookupInputState.
+	// from the value inside the DNSLookupInput.
 	ZeroTime time.Time
 }
 
 // DNSLookupGetaddrinfo returns a function that resolves a domain name to
 // IP addresses using libc's getaddrinfo function.
-func DNSLookupGetaddrinfo() Func[*DNSLookupInputState, *Result[*DNSLookupResultState]] {
+func DNSLookupGetaddrinfo() Func[*DomainToResolve, *Maybe[*ResolvedAddresses]] {
 	return &dnsLookupGetaddrinfoFunc{}
 }
 
@@ -129,7 +127,7 @@ type dnsLookupGetaddrinfoFunc struct{}
 
 // Apply implements Func.
 func (f *dnsLookupGetaddrinfoFunc) Apply(
-	ctx context.Context, input *DNSLookupInputState) *Result[*DNSLookupResultState] {
+	ctx context.Context, input *DomainToResolve) *Maybe[*ResolvedAddresses] {
 
 	// create trace
 	trace := measurexlite.NewTrace(input.IDGenerator.Add(1), input.ZeroTime)
@@ -154,7 +152,7 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	state := &DNSLookupResultState{
+	state := &ResolvedAddresses{
 		Addresses:   addrs, // maybe empty
 		Domain:      input.Domain,
 		IDGenerator: input.IDGenerator,
@@ -163,7 +161,7 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 		ZeroTime:    input.ZeroTime,
 	}
 
-	return &Result[*DNSLookupResultState]{
+	return &Maybe[*ResolvedAddresses]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,
@@ -173,14 +171,13 @@ func (f *dnsLookupGetaddrinfoFunc) Apply(
 
 // DNSLookupUDP returns a function that resolves a domain name to
 // IP addresses using the given DNS-over-UDP resolver.
-func DNSLookupUDP(resolver string) Func[*DNSLookupInputState, *Result[*DNSLookupResultState]] {
+func DNSLookupUDP(resolver string) Func[*DomainToResolve, *Maybe[*ResolvedAddresses]] {
 	return &dnsLookupUDPFunc{
 		Resolver: resolver,
 	}
 }
 
-// dnsLookupUDPFunc is the type returned by DNSLookupUDP. If you want
-// to init this type manually, make sure you set the MANDATORY fields.
+// dnsLookupUDPFunc is the function returned by DNSLookupUDP.
 type dnsLookupUDPFunc struct {
 	// Resolver is the MANDATORY resolver to use.
 	Resolver string
@@ -188,7 +185,7 @@ type dnsLookupUDPFunc struct {
 
 // Apply implements Func.
 func (f *dnsLookupUDPFunc) Apply(
-	ctx context.Context, input *DNSLookupInputState) *Result[*DNSLookupResultState] {
+	ctx context.Context, input *DomainToResolve) *Maybe[*ResolvedAddresses] {
 
 	// create trace
 	trace := measurexlite.NewTrace(input.IDGenerator.Add(1), input.ZeroTime)
@@ -218,7 +215,7 @@ func (f *dnsLookupUDPFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
-	state := &DNSLookupResultState{
+	state := &ResolvedAddresses{
 		Addresses:   addrs, // maybe empty
 		Domain:      input.Domain,
 		IDGenerator: input.IDGenerator,
@@ -227,7 +224,7 @@ func (f *dnsLookupUDPFunc) Apply(
 		ZeroTime:    input.ZeroTime,
 	}
 
-	return &Result[*DNSLookupResultState]{
+	return &Maybe[*ResolvedAddresses]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,

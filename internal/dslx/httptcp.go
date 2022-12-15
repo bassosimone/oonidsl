@@ -11,12 +11,12 @@ import (
 )
 
 // HTTPRequestOverTCP returns a Func that issues HTTP requests over TCP.
-func HTTPRequestOverTCP(options ...HTTPRequestOption) Func[*TCPConnectResultState, *Result[*HTTPRequestResultState]] {
+func HTTPRequestOverTCP(options ...HTTPRequestOption) Func[*TCPConnection, *Maybe[*HTTPResponse]] {
 	return Compose2(HTTPTransportTCP(), HTTPRequest(options...))
 }
 
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
-func HTTPTransportTCP() Func[*TCPConnectResultState, *Result[*HTTPTransportState]] {
+func HTTPTransportTCP() Func[*TCPConnection, *Maybe[*HTTPTransport]] {
 	return &httpTransportTCPFunc{}
 }
 
@@ -25,13 +25,13 @@ type httpTransportTCPFunc struct{}
 
 // Apply implements Func
 func (f *httpTransportTCPFunc) Apply(
-	ctx context.Context, input *TCPConnectResultState) *Result[*HTTPTransportState] {
+	ctx context.Context, input *TCPConnection) *Maybe[*HTTPTransport] {
 	httpTransport := netxlite.NewHTTPTransport(
 		input.Logger,
 		netxlite.NewSingleUseDialer(input.Conn),
 		netxlite.NewNullTLSDialer(),
 	)
-	state := &HTTPTransportState{
+	state := &HTTPTransport{
 		Address:               input.Address,
 		Domain:                input.Domain,
 		IDGenerator:           input.IDGenerator,
@@ -43,7 +43,7 @@ func (f *httpTransportTCPFunc) Apply(
 		Transport:             httpTransport,
 		ZeroTime:              input.ZeroTime,
 	}
-	return &Result[*HTTPTransportState]{
+	return &Maybe[*HTTPTransport]{
 		Error:        nil,
 		Observations: nil,
 		Skipped:      false,

@@ -29,7 +29,7 @@ func measureDCs(
 	defer wg.Done()
 
 	// ipAddrs contains the DCs IP addresses
-	var ipAddrs = dslx.AddressSet().Add(
+	var ipAddrs = dslx.NewAddressSet().Add(
 		"149.154.175.50",
 		"149.154.167.51",
 		"149.154.175.100",
@@ -40,12 +40,12 @@ func measureDCs(
 	// construct the list of endpoints to measure: we need to
 	// measure each IP address with port 80 and 443
 	var (
-		endpoints []*dslx.EndpointState
+		endpoints []*dslx.Endpoint
 		ports     = []int{80, 443}
 	)
 	for addr := range ipAddrs.M {
 		for _, port := range ports {
-			endpoints = append(endpoints, dslx.Endpoint(
+			endpoints = append(endpoints, dslx.NewEndpoint(
 				dslx.EndpointNetwork("tcp"),
 				dslx.EndpointAddress(net.JoinHostPort(addr, strconv.Itoa(port))),
 				dslx.EndpointOptionIDGenerator(idGen),
@@ -57,10 +57,10 @@ func measureDCs(
 
 	var (
 		// tcpConnectSuccessCounter counts the number of TCP successes
-		tcpConnectSuccessCounter = dslx.Counter[*dslx.TCPConnectResultState]()
+		tcpConnectSuccessCounter = dslx.Counter[*dslx.TCPConnection]()
 
 		// httpRoundTripSuccessCounter counts the number of HTTP successes
-		httpRoundTripSuccessCounter = dslx.Counter[*dslx.HTTPRequestResultState]()
+		httpRoundTripSuccessCounter = dslx.Counter[*dslx.HTTPResponse]()
 	)
 
 	// create the established connections pool
@@ -105,8 +105,8 @@ func measureDCs(
 // We say there is TCP blocking if no TCP connect succeded. Likewise, we
 // say there is HTTP blocking when no HTTP round trip succeded.
 func (tk *testKeys) setDCBlocking(
-	tcpSuccessCounter *dslx.CounterState[*dslx.TCPConnectResultState],
-	httpSuccessCounter *dslx.CounterState[*dslx.HTTPRequestResultState],
+	tcpSuccessCounter *dslx.CounterState[*dslx.TCPConnection],
+	httpSuccessCounter *dslx.CounterState[*dslx.HTTPResponse],
 ) {
 	defer tk.mu.Unlock()
 	tk.mu.Lock()

@@ -28,8 +28,8 @@ type Observations struct {
 	TLSHandshakes []*model.ArchivalTLSOrQUICHandshakeResult `json:"tls_handshakes"`
 }
 
-// ExtractObservations extracts observations from a list of [Result].
-func ExtractObservations[T any](rs ...*Result[T]) (out []*Observations) {
+// ExtractObservations extracts observations from a list of [Maybe].
+func ExtractObservations[T any](rs ...*Maybe[T]) (out []*Observations) {
 	for _, r := range rs {
 		out = append(out, r.Observations...)
 	}

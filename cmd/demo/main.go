@@ -25,7 +25,7 @@ func main() {
 	idGen := &atomicx.Int64{}
 
 	dnsLookupResults := dslx.Parallel(ctx, dslx.Parallelism(2),
-		dslx.DNSLookupInput(
+		dslx.NewDNSLookupInput(
 			dslx.DomainName("www.google.com"),
 			dslx.DNSLookupOptionZeroTime(zeroTime),
 			dslx.DNSLookupOptionLogger(log.Log),
@@ -38,7 +38,7 @@ func main() {
 	dnsObservations := dslx.ExtractObservations(dnsLookupResults...)
 	dump(dnsObservations)
 
-	endpoints := dslx.AddressSet(dnsLookupResults...).
+	endpoints := dslx.NewAddressSet(dnsLookupResults...).
 		Add("142.250.184.100").
 		RemoveBogons().
 		ToEndpoints(

@@ -84,7 +84,7 @@ func doMeasureTarget(
 	certPool *x509.CertPool,
 ) error {
 	// describe the DNS measurement input
-	dnsInput := dslx.DNSLookupInput(
+	dnsInput := dslx.NewDNSLookupInput(
 		dslx.DomainName(domain),
 		dslx.DNSLookupOptionIDGenerator(idGen),
 		dslx.DNSLookupOptionLogger(logger),
@@ -105,7 +105,7 @@ func doMeasureTarget(
 	}
 
 	// obtain a unique set of IP addresses w/o bogons inside it
-	ipAddrs := dslx.AddressSet(dnsResult).RemoveBogons()
+	ipAddrs := dslx.NewAddressSet(dnsResult).RemoveBogons()
 
 	// create the set of endpoints
 	endpoints := ipAddrs.ToEndpoints(
@@ -118,7 +118,7 @@ func doMeasureTarget(
 	)
 
 	// count the number of successes
-	successes := dslx.Counter[*dslx.HTTPRequestResultState]()
+	successes := dslx.Counter[*dslx.HTTPResponse]()
 
 	// create the established connections pool
 	connpool := &dslx.ConnPool{}
