@@ -6,24 +6,35 @@ package main
 
 import (
 	"context"
+	"sync"
+	"time"
 
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/dslx"
+	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
 // measureWeb measures telegram web.
-func measureWeb(ctx context.Context, state *measurementState) {
+func measureWeb(
+	ctx context.Context,
+	logger model.Logger,
+	idGen *atomicx.Int64,
+	zeroTime time.Time,
+	tk *testKeys,
+	wg *sync.WaitGroup,
+) {
 	const webDomain = "web.telegram.org"
 
 	// tell the parent we terminated
-	defer state.wg.Done()
+	defer wg.Done()
 
 	// describe the DNS measurement input
 	dnsInput := dslx.DNSLookupInput(
 		dslx.DomainName(webDomain),
-		dslx.DNSLookupOptionIDGenerator(state.idGen),
-		dslx.DNSLookupOptionLogger(state.logger),
-		dslx.DNSLookupOptionZeroTime(state.zeroTime),
+		dslx.DNSLookupOptionIDGenerator(idGen),
+		dslx.DNSLookupOptionLogger(logger),
+		dslx.DNSLookupOptionZeroTime(zeroTime),
 	)
 
 	// construct getaddrinfo resolver
@@ -33,11 +44,11 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	dnsResults := getaddrinfoResolver.Apply(ctx, dnsInput)
 
 	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
+	tk.mergeObservations(dslx.ExtractObservations(dnsResults)...)
 
 	// if the lookup has failed mark the whole web measurement as failed
 	if err := dnsResults.Error; err != nil {
-		state.tk.setWebResultFailure(err)
+		tk.setWebResultFailure(err)
 		return
 	}
 
@@ -46,7 +57,7 @@ func measureWeb(ctx context.Context, state *measurementState) {
 
 	// if the set is empty we only got bogons
 	if len(ipAddrs.M) <= 0 {
-		state.tk.setWebResultFailure(netxlite.ErrDNSBogon)
+		tk.setWebResultFailure(netxlite.ErrDNSBogon)
 		return
 	}
 
@@ -59,9 +70,9 @@ func measureWeb(ctx context.Context, state *measurementState) {
 		dslx.EndpointNetwork("tcp"),
 		dslx.EndpointPort(443),
 		dslx.EndpointOptionDomain(webDomain),
-		dslx.EndpointOptionIDGenerator(state.idGen),
-		dslx.EndpointOptionLogger(state.logger),
-		dslx.EndpointOptionZeroTime(state.zeroTime),
+		dslx.EndpointOptionIDGenerator(idGen),
+		dslx.EndpointOptionLogger(logger),
+		dslx.EndpointOptionZeroTime(zeroTime),
 	)
 
 	// count the number of successes
@@ -86,28 +97,28 @@ func measureWeb(ctx context.Context, state *measurementState) {
 	)
 
 	// extract and merge observations with the test keys
-	state.tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
+	tk.mergeObservations(dslx.ExtractObservations(httpsResults...)...)
 
 	// if we saw successes, then it's not blocked
 	if successes.Value() > 0 {
-		state.tk.setWebResultSuccess()
+		tk.setWebResultSuccess()
 		return
 	}
 
 	// attempt to set a meaningful error, if that's possible
 	if err := dslx.FirstErrorExcludingBrokenIPv6Errors(httpsResults...); err != nil {
-		state.tk.setWebResultFailure(err)
+		tk.setWebResultFailure(err)
 		return
 	}
 
 	// otherwise fallback to whatever is the first error
 	if err := dslx.FirstError(httpsResults...); err != nil {
-		state.tk.setWebResultFailure(err)
+		tk.setWebResultFailure(err)
 		return
 	}
 
 	// the last resort is to set an unknown failure error
-	state.tk.setWebResultFailure(netxlite.ErrUnknown)
+	tk.setWebResultFailure(netxlite.ErrUnknown)
 }
 
 // setWebResultSuccess sets the result of the web experiment in case of success
