@@ -6,6 +6,7 @@ package main
 
 import (
 	"context"
+	"crypto/x509"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
@@ -22,6 +23,11 @@ func measure(
 	zeroTime time.Time,
 	tk *testKeys,
 ) error {
+	certPool, err := newCertPool()
+	if err != nil {
+		return err // fundamental error, let's not submit
+	}
+
 	domains := []string{
 		"textsecure-service.whispersystems.org",
 		"storage.signal.org",
@@ -34,7 +40,7 @@ func measure(
 	// run measurements in parallel
 	errch := make(chan error)
 	for _, domain := range domains {
-		go measureTarget(ctx, logger, idGen, zeroTime, tk, domain, errch)
+		go measureTarget(ctx, logger, idGen, zeroTime, tk, domain, certPool, errch)
 	}
 
 	// collect the result of each measurement
@@ -61,10 +67,11 @@ func measureTarget(
 	zeroTime time.Time,
 	tk *testKeys,
 	domain string,
+	certPool *x509.CertPool,
 	errch chan error,
 ) {
 	// Note: this pattern ensures we write the output channel exactly once
-	errch <- doMeasureTarget(ctx, logger, idGen, zeroTime, tk, domain)
+	errch <- doMeasureTarget(ctx, logger, idGen, zeroTime, tk, domain, certPool)
 }
 
 func doMeasureTarget(
@@ -74,6 +81,7 @@ func doMeasureTarget(
 	zeroTime time.Time,
 	tk *testKeys,
 	domain string,
+	certPool *x509.CertPool,
 ) error {
 	// describe the DNS measurement input
 	dnsInput := dslx.DNSLookupInput(
@@ -116,12 +124,6 @@ func doMeasureTarget(
 	connpool := &dslx.ConnPool{}
 	defer connpool.Close()
 
-	// create the certificate pool
-	certPool, err := newCertPool()
-	if err != nil {
-		// TODO
-	}
-
 	// create function for the 443/tcp/tls/https measurement
 	httpsFunction := dslx.Compose6(
 		dslx.TCPConnect(connpool),
@@ -130,7 +132,7 @@ func doMeasureTarget(
 			dslx.TLSHandshakeOptionRootCAs(certPool),
 		),
 		dslx.HTTPTransportTLS(),
-		dslx.HTTPJustUseOneConn(), // TODO: do we want this?
+		dslx.HTTPJustUseOneConn(), // TODO(bassosimone): do we want this?
 		dslx.HTTPRequest(),
 		successes.Func(), // number of times we arrive here
 	)
