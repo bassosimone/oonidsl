@@ -30,7 +30,7 @@ func measureWeb(
 	defer wg.Done()
 
 	// describe the DNS measurement input
-	dnsInput := dslx.NewDNSLookupInput(
+	dnsInput := dslx.NewDomainToResolve(
 		dslx.DomainName(webDomain),
 		dslx.DNSLookupOptionIDGenerator(idGen),
 		dslx.DNSLookupOptionLogger(logger),

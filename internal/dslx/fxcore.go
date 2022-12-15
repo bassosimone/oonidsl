@@ -31,8 +31,8 @@ type Maybe[State any] struct {
 	// that subsequent steps should be skipped.
 	Skipped bool
 
-	// State contains state passed between function calls which may
-	// not exist if Error is not nil of Skipped is true.
+	// State contains state passed between function calls. You should
+	// only access State when Error is nil and Skipped is false.
 	State State
 }
 

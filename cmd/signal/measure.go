@@ -84,7 +84,7 @@ func doMeasureTarget(
 	certPool *x509.CertPool,
 ) error {
 	// describe the DNS measurement input
-	dnsInput := dslx.NewDNSLookupInput(
+	dnsInput := dslx.NewDomainToResolve(
 		dslx.DomainName(domain),
 		dslx.DNSLookupOptionIDGenerator(idGen),
 		dslx.DNSLookupOptionLogger(logger),

@@ -17,11 +17,11 @@ import (
 // DomainName is a domain name to resolve.
 type DomainName string
 
-// DNSLookupOption is an option you can pass to NewDNSLookupInput.
+// DNSLookupOption is an option you can pass to NewDomainToResolve.
 type DNSLookupOption func(*DomainToResolve)
 
 // DNSLookupOptionIDGenerator configures a specific ID generator.
-// See DNSLookupInput docs for more information.
+// See DomainToResolve docs for more information.
 func DNSLookupOptionIDGenerator(value *atomicx.Int64) DNSLookupOption {
 	return func(dis *DomainToResolve) {
 		dis.IDGenerator = value
@@ -29,7 +29,7 @@ func DNSLookupOptionIDGenerator(value *atomicx.Int64) DNSLookupOption {
 }
 
 // DNSLookupOptionLogger configures a specific logger.
-// See DNSLookupInput docs for more information.
+// See DomainToResolve docs for more information.
 func DNSLookupOptionLogger(value model.Logger) DNSLookupOption {
 	return func(dis *DomainToResolve) {
 		dis.Logger = value
@@ -37,17 +37,17 @@ func DNSLookupOptionLogger(value model.Logger) DNSLookupOption {
 }
 
 // DNSLookupOptionZeroTime configures the measurement's zero time.
-// See DNSLookupInput docs for more information.
+// See DomainToResolve docs for more information.
 func DNSLookupOptionZeroTime(value time.Time) DNSLookupOption {
 	return func(dis *DomainToResolve) {
 		dis.ZeroTime = value
 	}
 }
 
-// NewDNSLookupInput creates input for performing DNS lookups. The only mandatory
+// NewDomainToResolve creates input for performing DNS lookups. The only mandatory
 // argument is the domain name to resolve. You can also supply optional
 // values by passing options to this function.
-func NewDNSLookupInput(domain DomainName, options ...DNSLookupOption) *DomainToResolve {
+func NewDomainToResolve(domain DomainName, options ...DNSLookupOption) *DomainToResolve {
 	state := &DomainToResolve{
 		Domain:      string(domain),
 		IDGenerator: &atomicx.Int64{},
@@ -62,7 +62,7 @@ func NewDNSLookupInput(domain DomainName, options ...DNSLookupOption) *DomainToR
 
 // DomainToResolve is the input for DNS lookup functions.
 //
-// You should construct this type using the NewDNSLookupInput constructor
+// You should construct this type using the NewDomainToResolve constructor
 // as well as DNSLookupOption options to fill optional values. If you
 // want to construct this type manually, please make sure you initialize
 // all the variables marked as MANDATORY.
@@ -72,19 +72,19 @@ type DomainToResolve struct {
 
 	// IDGenerator is the MANDATORY ID generator. We will use this field
 	// to assign unique IDs to distinct sub-measurements. The default
-	// construction implemented by NewDNSLookupInput creates a new generator
+	// construction implemented by NewDomainToResolve creates a new generator
 	// that starts counting from zero, leading to the first trace having
 	// one as its index.
 	IDGenerator *atomicx.Int64
 
 	// Logger is the MANDATORY logger to use. The default construction
-	// implemented by NewDNSLookupInput uses model.DiscardLogger.
+	// implemented by NewDomainToResolve uses model.DiscardLogger.
 	Logger model.Logger
 
 	// ZeroTime is the MANDATORY zero time of the measurement. We will
 	// use this field as the zero value to compute relative elapsed times
 	// when generating measurements. The default construction by
-	// NewDNSLookupInit initializes this field with the current time.
+	// NewDomainToResolve initializes this field with the current time.
 	ZeroTime time.Time
 }
 
@@ -95,24 +95,24 @@ type ResolvedAddresses struct {
 	Addresses []string
 
 	// Domain is the domain we resolved. We inherit this field
-	// from the value inside the DNSLookupInput.
+	// from the value inside the DomainToResolve.
 	Domain string
 
 	// IDGenerator is the ID generator. We inherit this field
-	// from the value inside the DNSLookupInput.
+	// from the value inside the DomainToResolve.
 	IDGenerator *atomicx.Int64
 
 	// Logger is the logger to use. We inherit this field
-	// from the value inside the DNSLookupInput.
+	// from the value inside the DomainToResolve.
 	Logger model.Logger
 
 	// Trace is the trace we're currently using. This struct is
 	// created by the various Apply functions using values inside
-	// the DNSLookupInput to initialize the Trace.
+	// the DomainToResolve to initialize the Trace.
 	Trace *measurexlite.Trace
 
 	// ZeroTime is the zero time of the measurement. We inherit this field
-	// from the value inside the DNSLookupInput.
+	// from the value inside the DomainToResolve.
 	ZeroTime time.Time
 }
 
