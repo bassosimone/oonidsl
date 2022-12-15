@@ -8,7 +8,6 @@ import (
 	"context"
 
 	"github.com/bassosimone/oonidsl/internal/dslx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
@@ -77,8 +76,8 @@ func doMeasureTarget(
 	state.tk.mergeObservations(dslx.ExtractObservations(dnsResult)...)
 
 	// if the lookup has failed we return
-	if dnsResult.IsErr() {
-		return dnsResult.UnwrapErr()
+	if dnsResult.Error != nil {
+		return dnsResult.Error
 	}
 
 	// obtain a unique set of IP addresses w/o bogons inside it
@@ -108,7 +107,7 @@ func doMeasureTarget(
 	}
 
 	// create function for the 443/tcp/tls/https measurement
-	httpsFunction := fx.ComposeResult6(
+	httpsFunction := dslx.Compose6(
 		dslx.TCPConnect(connpool),
 		dslx.TLSHandshake(
 			connpool,
@@ -121,9 +120,9 @@ func doMeasureTarget(
 	)
 
 	// run 443/tcp/tls/https measurement
-	httpsResults := fx.Map(
+	httpsResults := dslx.Map(
 		ctx,
-		fx.Parallelism(2),
+		dslx.Parallelism(2),
 		httpsFunction,
 		endpoints...,
 	)
