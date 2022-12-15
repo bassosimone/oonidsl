@@ -10,6 +10,11 @@ import (
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
+// HTTPRequestOverTLS returns a Func that issues HTTP requests over TLS.
+func HTTPRequestOverTLS(options ...HTTPRequestOption) Func[*TLSHandshakeResultState, *Result[*HTTPRequestResultState]] {
+	return Compose2(HTTPTransportTLS(), HTTPRequest(options...))
+}
+
 // HTTPTransportTLS converts a TLS connection into an HTTP transport.
 func HTTPTransportTLS() Func[*TLSHandshakeResultState, *Result[*HTTPTransportState]] {
 	return &httpTransportTLSFunc{}

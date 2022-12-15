@@ -10,6 +10,11 @@ import (
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 )
 
+// HTTPRequestOverTCP returns a Func that issues HTTP requests over TCP.
+func HTTPRequestOverTCP(options ...HTTPRequestOption) Func[*TCPConnectResultState, *Result[*HTTPRequestResultState]] {
+	return Compose2(HTTPTransportTCP(), HTTPRequest(options...))
+}
+
 // HTTPTransportTCP converts a TCP connection into an HTTP transport.
 func HTTPTransportTCP() Func[*TCPConnectResultState, *Result[*HTTPTransportState]] {
 	return &httpTransportTCPFunc{}

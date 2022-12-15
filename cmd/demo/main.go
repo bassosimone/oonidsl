@@ -56,14 +56,13 @@ func main() {
 	tlsHandshakeErrors := &dslx.ErrorLogger{}
 
 	endpointsResults := dslx.Map(ctx, dslx.Parallelism(2),
-		dslx.Compose4(
+		dslx.Compose3(
 			dslx.TCPConnect(connpool),
 			dslx.RecordErrors(
 				tlsHandshakeErrors,
 				dslx.TLSHandshake(connpool),
 			),
-			dslx.HTTPTransportTLS(),
-			dslx.HTTPRequest(),
+			dslx.HTTPRequestOverTLS(),
 		),
 		endpoints...,
 	)
