@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"net"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
@@ -151,7 +152,18 @@ func (f *tlsHandshakeFunc) serverName(input *TCPConnection) string {
 	if f.ServerName != "" {
 		return f.ServerName
 	}
-	return input.Domain
+	if input.Domain != "" {
+		return input.Domain
+	}
+	addr, _, err := net.SplitHostPort(input.Address)
+	if err == nil {
+		return addr
+	}
+	// Note: golang requires a ServerName and fails if it's empty. If the provided
+	// ServerName is an IP address, however, golang WILL NOT emit any SNI extension
+	// in the ClientHello, consistently with RFC 6066 Section 3 requirements.
+	input.Logger.Warn("TLSHandshake: cannot determine which SNI to use")
+	return ""
 }
 
 func (f *tlsHandshakeFunc) nextProto() []string {
