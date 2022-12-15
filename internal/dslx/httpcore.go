@@ -10,11 +10,9 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"sync"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
 	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
@@ -109,8 +107,7 @@ func HTTPRequestOptionUserAgent(value string) HTTPRequestOption {
 }
 
 // HTTPRequest issues an HTTP request using a transport and returns a response.
-func HTTPRequest(options ...HTTPRequestOption) fx.Func[
-	*HTTPTransportState, fx.Result[*HTTPRequestResultState]] {
+func HTTPRequest(options ...HTTPRequestOption) Func[*HTTPTransportState, *Result[*HTTPRequestResultState]] {
 	f := &httpRequestFunc{}
 	for _, option := range options {
 		option(f)
@@ -144,7 +141,7 @@ type httpRequestFunc struct {
 
 // Apply implements Func.
 func (f *httpRequestFunc) Apply(
-	ctx context.Context, input *HTTPTransportState) fx.Result[*HTTPRequestResultState] {
+	ctx context.Context, input *HTTPTransportState) *Result[*HTTPRequestResultState] {
 	// create HTTP request
 	const timeout = 10 * time.Second
 	ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -176,18 +173,14 @@ func (f *httpRequestFunc) Apply(
 		ol.Stop(err)
 	}
 
-	if err != nil {
-		return fx.Err[*HTTPRequestResultState](err)
-	}
+	observations = append(observations, maybeTraceToObservations(input.Trace)...)
 
-	result := &HTTPRequestResultState{
+	state := &HTTPRequestResultState{
 		Address:                  input.Address,
 		Domain:                   input.Domain,
-		HTTPObservationsOnce:     sync.Once{},
-		HTTPObservations:         observations, // possibly nil
-		HTTPRequest:              req,          // possibly nil
-		HTTPResponse:             resp,         // possibly nil
-		HTTPResponseBodySnapshot: body,         // possibly nil
+		HTTPRequest:              req,  // possibly nil
+		HTTPResponse:             resp, // possibly nil
+		HTTPResponseBodySnapshot: body, // possibly nil
 		IDGenerator:              input.IDGenerator,
 		Logger:                   input.Logger,
 		Network:                  input.Network,
@@ -195,7 +188,12 @@ func (f *httpRequestFunc) Apply(
 		ZeroTime:                 input.ZeroTime,
 	}
 
-	return fx.Ok(result)
+	return &Result[*HTTPRequestResultState]{
+		Error:        err,
+		Observations: observations,
+		Skipped:      false,
+		State:        state,
+	}
 }
 
 func (f *httpRequestFunc) newHTTPRequest(
@@ -333,13 +331,6 @@ type HTTPRequestResultState struct {
 	// Domain is the OPTIONAL domain from which we determined Address.
 	Domain string
 
-	// HTTPObservationsOnce ensures we drain HTTPObservations just once.
-	HTTPObservationsOnce sync.Once
-
-	// HTTPObservations contains zero or more HTTP observations. These are
-	// returned when you call the Observations method.
-	HTTPObservations []*Observations
-
 	// HTTPRequest is the possibly-nil HTTP request.
 	HTTPRequest *http.Request
 
@@ -364,19 +355,4 @@ type HTTPRequestResultState struct {
 
 	// ZeroTime is the MANDATORY zero time of the measurement.
 	ZeroTime time.Time
-}
-
-var _ ObservationsProducer = &HTTPRequestResultState{}
-
-// Observations implements ObservationsProducer
-func (s *HTTPRequestResultState) Observations() (out []*Observations) {
-	if s.Trace != nil {
-		out = append(out, maybeTraceToObservations(s.Trace)...)
-	}
-	// Note: we cannot modify the array because that may be a data race so we
-	// use a sync.Once to ensure we have "once" semantics.
-	s.HTTPObservationsOnce.Do(func() {
-		out = append(out, s.HTTPObservations...)
-	})
-	return
 }

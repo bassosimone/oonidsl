@@ -5,7 +5,6 @@ package dslx
 //
 
 import (
-	"github.com/bassosimone/oonidsl/internal/fx"
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
 	"github.com/bassosimone/oonidsl/internal/model"
 )
@@ -29,22 +28,10 @@ type Observations struct {
 	TLSHandshakes []*model.ArchivalTLSOrQUICHandshakeResult `json:"tls_handshakes"`
 }
 
-// ObservationsProducer is anything from which we can extract observations.
-type ObservationsProducer interface {
-	// Observations exctracts and returns observations. This function
-	// MUST have a once semantics: after the first call it MUST return
-	// a nil or zero-length slice to the caller.
-	Observations() []*Observations
-}
-
-// ExtractObservations extracts observations from a list of producers.
-func ExtractObservations[T ObservationsProducer](producers ...fx.Result[T]) (out []*Observations) {
-	for _, p := range producers {
-		if p.IsErr() {
-			continue
-		}
-		v := p.Unwrap()
-		out = append(out, v.Observations()...)
+// ExtractObservations extracts observations from a list of [Result].
+func ExtractObservations[T any](rs ...*Result[T]) (out []*Observations) {
+	for _, r := range rs {
+		out = append(out, r.Observations...)
 	}
 	return
 }

@@ -1,7 +1,7 @@
-package fx
+package dslx
 
 //
-// Asynchronous functions
+// Functional extensions (async code)
 //
 
 import (
@@ -29,9 +29,9 @@ type Parallelism int
 func Map[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
-	fx Func[A, Result[B]],
+	fx Func[A, *Result[B]],
 	as ...A,
-) []Result[B] {
+) []*Result[B] {
 	return MapAsync(ctx, parallelism, fx, Stream(as...)).Collect()
 }
 
@@ -39,11 +39,11 @@ func Map[A, B any](
 func MapAsync[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
-	fx Func[A, Result[B]],
+	fx Func[A, *Result[B]],
 	inputs *Streamable[A],
-) *Streamable[Result[B]] {
+) *Streamable[*Result[B]] {
 	// create channel for returning results
-	r := make(chan Result[B])
+	r := make(chan *Result[B])
 
 	// spawn worker goroutines
 	wg := &sync.WaitGroup{}
@@ -66,7 +66,7 @@ func MapAsync[A, B any](
 		wg.Wait()
 	}()
 
-	return &Streamable[Result[B]]{r}
+	return &Streamable[*Result[B]]{r}
 }
 
 // Parallel executes f1...fn in parallel over the same input.
@@ -87,8 +87,8 @@ func Parallel[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
 	input A,
-	fn ...Func[A, Result[B]],
-) []Result[B] {
+	fn ...Func[A, *Result[B]],
+) []*Result[B] {
 	return ParallelAsync(ctx, parallelism, input, Stream(fn...)).Collect()
 }
 
@@ -97,10 +97,10 @@ func ParallelAsync[A, B any](
 	ctx context.Context,
 	parallelism Parallelism,
 	input A,
-	funcs *Streamable[Func[A, Result[B]]],
-) *Streamable[Result[B]] {
+	funcs *Streamable[Func[A, *Result[B]]],
+) *Streamable[*Result[B]] {
 	// create channel for returning results
-	r := make(chan Result[B])
+	r := make(chan *Result[B])
 
 	// spawn worker goroutines
 	wg := &sync.WaitGroup{}
@@ -123,14 +123,14 @@ func ParallelAsync[A, B any](
 		wg.Wait()
 	}()
 
-	return &Streamable[Result[B]]{r}
+	return &Streamable[*Result[B]]{r}
 }
 
 // ApplyAsync is equivalent to calling Apply but returns a Streamable.
 func ApplyAsync[A, B any](
 	ctx context.Context,
-	fx Func[A, Result[B]],
+	fx Func[A, *Result[B]],
 	input A,
-) *Streamable[Result[B]] {
+) *Streamable[*Result[B]] {
 	return MapAsync(ctx, Parallelism(1), fx, Stream(input))
 }

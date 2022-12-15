@@ -1,7 +1,7 @@
-package fx
+package dslx
 
 //
-// Streams
+// Functional extensions (stream)
 //
 
 import "sync"
@@ -33,7 +33,7 @@ func Stream[T any](ts ...T) *Streamable[T] {
 	return &Streamable[T]{c}
 }
 
-// Zip zips together results from multiple streams.
+// Zip zips together results from many [Streabable]s.
 func Zip[T any](sources ...*Streamable[T]) *Streamable[T] {
 	r := make(chan T)
 	wg := &sync.WaitGroup{}

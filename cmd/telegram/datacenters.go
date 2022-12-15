@@ -10,7 +10,6 @@ import (
 	"strconv"
 
 	"github.com/bassosimone/oonidsl/internal/dslx"
-	"github.com/bassosimone/oonidsl/internal/fx"
 )
 
 // measureDCs measures telegram data centers.
@@ -58,7 +57,7 @@ func measureDCs(ctx context.Context, state *measurementState) {
 	defer connpool.Close()
 
 	// construct the function to measure the endpoints
-	function := fx.ComposeResult5(
+	function := dslx.Compose5(
 		dslx.TCPConnect(connpool),
 		tcpConnectSuccessCounter.Func(), // count number of successful TCP connects
 		dslx.HTTPTransportTCP(),
@@ -69,9 +68,9 @@ func measureDCs(ctx context.Context, state *measurementState) {
 	)
 
 	// measure all the endpoints in parallel and collect the results
-	results := fx.Map(
+	results := dslx.Map(
 		ctx,
-		fx.Parallelism(3),
+		dslx.Parallelism(3),
 		function,
 		endpoints...,
 	)
