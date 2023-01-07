@@ -9,9 +9,9 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/lucas-clemente/quic-go"
 	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/lucas-clemente/quic-go"
 )
 
 // NewQUICDialerWithoutResolver is equivalent to netxlite.NewQUICDialerWithoutResolver
@@ -99,4 +99,13 @@ func (tx *Trace) FirstQUICHandshakeOrNil() *model.ArchivalTLSOrQUICHandshakeResu
 		return nil
 	}
 	return ev[0]
+}
+
+// MaybeCloseQUICConn is a convenience function for closing a quic.EarlyConnection only when such a conn
+// isn't nil.
+func MaybeCloseQUICConn(conn quic.EarlyConnection) (err error) {
+	if conn != nil {
+		err = conn.CloseWithError(0, "")
+	}
+	return
 }

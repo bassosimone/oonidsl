@@ -15,6 +15,7 @@ import (
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
 	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
+	"github.com/lucas-clemente/quic-go"
 )
 
 // TLSHandshakeOption is an option you can pass to TLSHandshake.
@@ -182,6 +183,9 @@ type TLSConnection struct {
 	// Conn is the established TLS conn.
 	Conn netxlite.TLSConn
 
+	// QUICConn is the established QUIC conn.
+	QUICConn quic.EarlyConnection
+
 	// Domain is the OPTIONAL domain we resolved.
 	Domain string
 
@@ -193,6 +197,9 @@ type TLSConnection struct {
 
 	// Network is the MANDATORY network we tried to use when connecting.
 	Network string
+
+	// TLSConfig is the config we need to establ. a QUIC conn. and construct an HTTP/3 transport.
+	TLSConfig *tls.Config
 
 	// TLSState is the possibly-empty TLS connection state.
 	TLSState tls.ConnectionState
