@@ -33,6 +33,5 @@ func (p *ConnPool) Close() error {
 		_ = p.v[idx].Close()
 	}
 	p.v = nil // reset
-
 	return nil
 }
