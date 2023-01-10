@@ -26,6 +26,9 @@ type Observations struct {
 
 	// TLSHandshakes contains the TLS handshakes results.
 	TLSHandshakes []*model.ArchivalTLSOrQUICHandshakeResult `json:"tls_handshakes"`
+
+	// QUICHandshakes contains the QUIC handshakes results.
+	QUICHandshakes []*model.ArchivalTLSOrQUICHandshakeResult `json:"quic_handshakes"`
 }
 
 // ExtractObservations extracts observations from a list of [Maybe].
@@ -41,11 +44,12 @@ func ExtractObservations[T any](rs ...*Maybe[T]) (out []*Observations) {
 func maybeTraceToObservations(trace *measurexlite.Trace) (out []*Observations) {
 	if trace != nil {
 		out = append(out, &Observations{
-			NetworkEvents: trace.NetworkEvents(),
-			Queries:       trace.DNSLookupsFromRoundTrip(),
-			Requests:      []*model.ArchivalHTTPRequestResult{}, // no extractor inside trace!
-			TCPConnect:    trace.TCPConnects(),
-			TLSHandshakes: trace.TLSHandshakes(),
+			NetworkEvents:  trace.NetworkEvents(),
+			Queries:        trace.DNSLookupsFromRoundTrip(),
+			Requests:       []*model.ArchivalHTTPRequestResult{}, // no extractor inside trace!
+			TCPConnect:     trace.TCPConnects(),
+			TLSHandshakes:  trace.TLSHandshakes(),
+			QUICHandshakes: trace.QUICHandshakes(),
 		})
 	}
 	return
