@@ -108,7 +108,7 @@ func doMeasureTarget(
 	successes := dslx.Counter[*dslx.HTTPResponse]()
 
 	// create the established connections pool
-	connpool := &dslx.QUICConnPool{}
+	connpool := &dslx.ConnPool{}
 	defer connpool.Close()
 
 	// create function for the 443/quic/http3 measurement

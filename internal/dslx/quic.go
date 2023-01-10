@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"io"
 	"time"
 
 	"github.com/bassosimone/oonidsl/internal/atomicx"
@@ -42,7 +43,7 @@ func QUICHandshakeOptionServerName(value string) QUICHandshakeOption {
 }
 
 // QUICHandshake returns a function performing QUIC handshakes.
-func QUICHandshake(pool *QUICConnPool, options ...QUICHandshakeOption) Func[
+func QUICHandshake(pool *ConnPool, options ...QUICHandshakeOption) Func[
 	*Endpoint, *Maybe[*QUICConnection]] {
 	f := &quicHandshakeFunc{
 		InsecureSkipVerify: false,
@@ -61,8 +62,8 @@ type quicHandshakeFunc struct {
 	// InsecureSkipVerify allows to skip TLS verification.
 	InsecureSkipVerify bool
 
-	// Pool is the QUICConnPool that owns us.
-	Pool *QUICConnPool
+	// Pool is the ConnPool that owns us.
+	Pool *ConnPool
 
 	// RootCAs contains the Root CAs to use.
 	RootCAs *x509.CertPool
@@ -105,16 +106,18 @@ func (f *quicHandshakeFunc) Apply(
 	// handshake
 	quicConn, err := quicDialer.DialContext(ctx, input.Address, config, &quic.Config{})
 
-	// possibly register established conn for late close
-	f.Pool.maybeRegister(quicConn)
+	var closerConn io.Closer
+	var tlsState tls.ConnectionState
+	if quicConn != nil {
+		closerConn = &quicCloserConn{quicConn}
+		tlsState = quicConn.ConnectionState().TLS.ConnectionState // only quicConn can be nil
+	}
+
+	// possibly track established conn for late close
+	f.Pool.MaybeTrack(closerConn)
 
 	// stop the operation logger
 	ol.Stop(err)
-
-	var tlsState tls.ConnectionState
-	if quicConn != nil {
-		tlsState = quicConn.ConnectionState().TLS.ConnectionState // only quicConn can be nil
-	}
 
 	// start preparing the message to emit on the stdout
 	state := &QUICConnection{
@@ -177,4 +180,12 @@ type QUICConnection struct {
 
 	// ZeroTime is the MANDATORY zero time of the measurement.
 	ZeroTime time.Time
+}
+
+type quicCloserConn struct {
+	quic.EarlyConnection
+}
+
+func (c *quicCloserConn) Close() error {
+	return c.CloseWithError(0, "")
 }
