@@ -10,7 +10,9 @@ import (
 	"crypto/x509"
 	"time"
 
+	"github.com/bassosimone/oonidsl/internal/atomicx"
 	"github.com/bassosimone/oonidsl/internal/measurexlite"
+	"github.com/bassosimone/oonidsl/internal/model"
 	"github.com/bassosimone/oonidsl/internal/netxlite"
 	"github.com/lucas-clemente/quic-go"
 )
@@ -41,7 +43,7 @@ func QUICHandshakeOptionServerName(value string) QUICHandshakeOption {
 
 // QUICHandshake returns a function performing QUIC handshakes.
 func QUICHandshake(pool *QUICConnPool, options ...QUICHandshakeOption) Func[
-	*Endpoint, *Maybe[*TLSConnection]] {
+	*Endpoint, *Maybe[*QUICConnection]] {
 	f := &quicHandshakeFunc{
 		InsecureSkipVerify: false,
 		Pool:               pool,
@@ -71,7 +73,7 @@ type quicHandshakeFunc struct {
 
 // Apply implements Func.
 func (f *quicHandshakeFunc) Apply(
-	ctx context.Context, input *Endpoint) *Maybe[*TLSConnection] {
+	ctx context.Context, input *Endpoint) *Maybe[*QUICConnection] {
 	// create trace
 	trace := measurexlite.NewTrace(input.IDGenerator.Add(1), input.ZeroTime)
 
@@ -109,8 +111,13 @@ func (f *quicHandshakeFunc) Apply(
 	// stop the operation logger
 	ol.Stop(err)
 
+	var tlsState tls.ConnectionState
+	if quicConn != nil {
+		tlsState = quicConn.ConnectionState().TLS.ConnectionState // only quicConn can be nil
+	}
+
 	// start preparing the message to emit on the stdout
-	state := &TLSConnection{
+	state := &QUICConnection{
 		Address:     input.Address,
 		QUICConn:    quicConn,
 		Domain:      input.Domain,
@@ -118,12 +125,12 @@ func (f *quicHandshakeFunc) Apply(
 		Logger:      input.Logger,
 		Network:     input.Network,
 		TLSConfig:   config,
-		TLSState:    quicConn.ConnectionState().TLS.ConnectionState, // TODO unsafe?
+		TLSState:    tlsState,
 		Trace:       trace,
 		ZeroTime:    input.ZeroTime,
 	}
 
-	return &Maybe[*TLSConnection]{
+	return &Maybe[*QUICConnection]{
 		Error:        err,
 		Observations: maybeTraceToObservations(trace),
 		Skipped:      false,
@@ -136,4 +143,38 @@ func (f *quicHandshakeFunc) serverName(input *Endpoint) string {
 		return f.ServerName
 	}
 	return input.Domain
+}
+
+// QUICConnection is an established QUIC connection. If you initialize
+// manually, init at least the ones marked as MANDATORY.
+type QUICConnection struct {
+	// Address is the MANDATORY address we tried to connect to.
+	Address string
+
+	// QUICConn is the established QUIC conn.
+	QUICConn quic.EarlyConnection
+
+	// Domain is the OPTIONAL domain we resolved.
+	Domain string
+
+	// IDGenerator is the MANDATORY ID generator to use.
+	IDGenerator *atomicx.Int64
+
+	// Logger is the MANDATORY logger to use.
+	Logger model.Logger
+
+	// Network is the MANDATORY network we tried to use when connecting.
+	Network string
+
+	// TLSConfig is the config we need to establ. a QUIC conn. and construct an HTTP/3 transport.
+	TLSConfig *tls.Config
+
+	// TLSState is the possibly-empty TLS connection state.
+	TLSState tls.ConnectionState
+
+	// Trace is the MANDATORY trace we're using.
+	Trace *measurexlite.Trace
+
+	// ZeroTime is the MANDATORY zero time of the measurement.
+	ZeroTime time.Time
 }

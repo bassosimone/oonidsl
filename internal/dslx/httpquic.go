@@ -11,7 +11,7 @@ import (
 )
 
 // HTTPTransportQUIC converts a QUIC connection into an HTTP transport.
-func HTTPTransportQUIC() Func[*TLSConnection, *Maybe[*HTTPTransport]] {
+func HTTPTransportQUIC() Func[*QUICConnection, *Maybe[*HTTPTransport]] {
 	return &httpTransportQUICFunc{}
 }
 
@@ -20,7 +20,7 @@ type httpTransportQUICFunc struct{}
 
 // Apply implements Func.
 func (f *httpTransportQUICFunc) Apply(
-	ctx context.Context, input *TLSConnection) *Maybe[*HTTPTransport] {
+	ctx context.Context, input *QUICConnection) *Maybe[*HTTPTransport] {
 	// create transport
 	httpTransport := netxlite.NewHTTP3Transport(
 		input.Logger,
